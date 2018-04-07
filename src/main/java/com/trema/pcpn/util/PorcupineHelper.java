@@ -19,6 +19,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import com.trema.pcpn.cl.ClusteringMetrics;
 import com.trema.pcpn.cl.CustomHAC;
 import com.trema.pcpn.cl.CustomKMeans;
+import com.trema.pcpn.cl.RandomClustering;
 
 
 public class PorcupineHelper {
@@ -60,6 +61,38 @@ public class PorcupineHelper {
 		meanRand/=count;
 		meanF/=count;
 		System.out.println("Mean Adj RAND = "+meanRand+", mean fmeasure = "+meanF);
+	}
+	
+	public void runRandomClustering(Properties p, boolean withTruePage) throws FileNotFoundException, IOException {
+		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		
+		HashMap<String, ArrayList<String>> pageParaMap;
+		if(withTruePage)
+			pageParaMap = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+		else
+			pageParaMap = DataUtilities.getPageParaMapFromRunfile(p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+		
+		StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
+			try {
+				ArrayList<String> paraIDsInPage = pageParaMap.get(page); 
+				//ArrayList<String> paraIDsInPage = pageParaMapArtQrels.get(page);
+				ArrayList<String> secIDsInPage = pageSecMap.get(page);
+				//ArrayList<ParaPairData> ppdList = similarityData.get(page);
+				RandomClustering rc = new RandomClustering(p, page, paraIDsInPage, secIDsInPage);
+				resultPageClusters.put(page, rc.cluster());
+				System.out.println("Clustering done for "+page);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		});
+		
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
+				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		oos.writeObject(resultPageClusters);
+		oos.close();
 	}
 	
 	// properties file, withTruePage - whether use true page para map or pagerun file as candidate set

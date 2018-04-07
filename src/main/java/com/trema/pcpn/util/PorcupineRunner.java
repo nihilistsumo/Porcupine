@@ -34,6 +34,9 @@ public class PorcupineRunner {
 			else if(cmd.equalsIgnoreCase("ttfkm")){
 				ph.runKMeansClustering(prop, true, "tfidf");
 			}
+			else if(cmd.equalsIgnoreCase("rand")){
+				ph.runRandomClustering(prop, true);
+			}
 			else if(cmd.equalsIgnoreCase("cltxt")){
 				ph.convertClusterDataToText(prop);
 			}

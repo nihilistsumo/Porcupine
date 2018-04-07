@@ -9,12 +9,12 @@ import java.util.Properties;
 
 public class CustomHAC {
 	
-	public Properties prop;
-	public String pageID;
-	public int secNo;
-	HashMap<String, double[]> paraVecMap;
-	ArrayList<String> secids;
-	ArrayList<String> paraids;
+	private Properties prop;
+	private String pageID;
+	private int secNo;
+	private HashMap<String, double[]> paraVecMap;
+	private ArrayList<String> secids;
+	private ArrayList<String> paraids;
 	
 	public CustomHAC(Properties p, String pID, ArrayList<String> paraIDs, ArrayList<String> sectionIDs, HashMap<String, double[]> vecs){
 		this.prop = p;

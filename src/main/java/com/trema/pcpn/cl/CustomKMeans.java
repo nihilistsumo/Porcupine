@@ -25,11 +25,11 @@ import cc.mallet.types.NormalizedDotProductMetric;
 
 public class CustomKMeans {
 	
-	public Properties prop;
-	public String pageID;
-	public int secNo;
-	HashMap<String, double[]> paraVecMap;
-	ArrayList<String> secids;
+	private Properties prop;
+	private String pageID;
+	private int secNo;
+	private HashMap<String, double[]> paraVecMap;
+	private ArrayList<String> secids;
 	
 	public CustomKMeans(Properties p, String pID, ArrayList<String> sectionIDs, HashMap<String, double[]> vecs){
 		this.prop = p;
