@@ -81,7 +81,7 @@ public class PorcupineHelper {
 		
 		StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
 			try {
-				ArrayList<String> paraIDsInPage = pageParaMap.get(page);
+				ArrayList<String> paraIDsInPage = pageParaMap.get(page); 
 				//ArrayList<String> paraIDsInPage = pageParaMapArtQrels.get(page);
 				ArrayList<String> secIDsInPage = pageSecMap.get(page);
 				//ArrayList<ParaPairData> ppdList = similarityData.get(page);

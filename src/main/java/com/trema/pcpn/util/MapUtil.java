@@ -12,7 +12,7 @@ public class MapUtil {
 	                Map.Entry::getKey, 
 	                Map.Entry::getValue, 
 	                (e1, e2) -> e1, 
-	                LinkedHashMap::new
+	                LinkedHashMap::new 
 	              ));
 	}
 }
