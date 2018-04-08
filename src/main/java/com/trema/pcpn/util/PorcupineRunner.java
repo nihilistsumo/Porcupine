@@ -16,26 +16,29 @@ public class PorcupineRunner {
 			prop.load(new FileInputStream(new File("project.properties")));
 			PorcupineHelper ph = new PorcupineHelper();
 			String cmd = prop.getProperty("mode");
-			if(cmd.equalsIgnoreCase("twvhac")){
-				ph.runHACClustering(prop, true, "w2v");
+			boolean truePage = false;
+			if(cmd.charAt(0)=='t')
+				truePage = true;
+			if(cmd.endsWith("wvhac")){
+				ph.runHACClustering(prop, truePage, "w2v");
 			}
-			else if(cmd.equalsIgnoreCase("ttmhac")){
-				ph.runHACClustering(prop, true, "tm");
+			else if(cmd.endsWith("tmhac")){
+				ph.runHACClustering(prop, truePage, "tm");
 			}
-			else if(cmd.equalsIgnoreCase("ttfhac")){
-				ph.runHACClustering(prop, true, "tfidf");
+			else if(cmd.endsWith("tfhac")){
+				ph.runHACClustering(prop, truePage, "tfidf");
 			}
-			else if(cmd.equalsIgnoreCase("twvkm")){
-				ph.runKMeansClustering(prop, true, "w2v");
+			else if(cmd.endsWith("wvkm")){
+				ph.runKMeansClustering(prop, truePage, "w2v");
 			}
-			else if(cmd.equalsIgnoreCase("ttmkm")){
-				ph.runKMeansClustering(prop, true, "tm");
+			else if(cmd.endsWith("tmkm")){
+				ph.runKMeansClustering(prop, truePage, "tm");
 			}
-			else if(cmd.equalsIgnoreCase("ttfkm")){
-				ph.runKMeansClustering(prop, true, "tfidf");
+			else if(cmd.endsWith("tfkm")){
+				ph.runKMeansClustering(prop, truePage, "tfidf");
 			}
-			else if(cmd.equalsIgnoreCase("rand")){
-				ph.runRandomClustering(prop, true);
+			else if(cmd.endsWith("rand")){
+				ph.runRandomClustering(prop, truePage);
 			}
 			else if(cmd.equalsIgnoreCase("cltxt")){
 				ph.convertClusterDataToText(prop);

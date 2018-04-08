@@ -114,6 +114,7 @@ public class DataUtilities {
 			line = br.readLine();
 		}
 		br.close();
+		System.out.println("Read glove file");
 		return tokenVecMap;
 	}
 	
