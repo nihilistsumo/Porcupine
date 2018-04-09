@@ -46,8 +46,10 @@ public class PorcupineHelper {
 		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(
 				p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
 		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
+		ois.close();
 		double rand, fmeasure, meanRand = 0, meanF = 0;
 		int count = 0;
+		System.out.println("PAGE-ID ADJ-RAND FMEASURE");
 		for(String pageid:candClusters.keySet()){
 			ClusteringMetrics cm = new ClusteringMetrics(DataUtilities.getGTClusters(
 					pageid, p.getProperty("data-dir")+"/"+p.getProperty("top-qrels")), candClusters.get(pageid), false);
@@ -56,7 +58,7 @@ public class PorcupineHelper {
 			meanRand+=rand;
 			meanF+=fmeasure;
 			count++;
-			System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
+			System.out.println(pageid+" "+rand+" "+fmeasure);
 		}
 		meanRand/=count;
 		meanF/=count;

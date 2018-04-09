@@ -55,6 +55,37 @@ public class ClusteringMetrics {
 		return f;
 	}
 	
+	public ArrayList<ArrayList<String>> getTPpairs() {
+		ArrayList<ArrayList<String>> pairs = new ArrayList<ArrayList<String>>();
+		String p1, p2;
+		ArrayList<String> trueRetParas = new ArrayList<String>();
+		for(String paraid:this.paraIDs){
+			if(this.candidateParaClMap.keySet().contains(paraid))
+				trueRetParas.add(paraid);
+		}
+		if(trueRetParas.size()>1){
+			for(int i=0; i<trueRetParas.size()-1; i++){
+				for(int j=i+1; j<trueRetParas.size(); j++){
+					p1 = trueRetParas.get(i);
+					p2 = trueRetParas.get(j);
+					if(this.trueParaClMap.get(p1).equalsIgnoreCase(this.trueParaClMap.get(p2))){
+						//same cluster in true
+						if(this.candidateParaClMap.get(p1).equalsIgnoreCase(this.candidateParaClMap.get(p2))){
+							//same cluster in cand
+							ArrayList<String> pair = new ArrayList<String>();
+							pair.add(p1);
+							pair.add(p2);
+							pairs.add(pair);
+							if(detailed)
+								System.out.println("True positive pairs: "+p1+" "+p2);
+						}
+					}
+				}
+			}
+		}
+		return pairs;
+	}
+	
 	private double[] pairPrecisionRecall(){
 		//pr = {prec, rec}
 		double[] pr = {0.0, 0.0};
