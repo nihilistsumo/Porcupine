@@ -22,7 +22,6 @@ import org.apache.lucene.store.FSDirectory;
 
 import com.trema.pcpn.cl.ClusteringMetrics;
 import com.trema.pcpn.util.DataUtilities;
-import com.trema.pcpn.util.ParaSimQrelsWriter;
 
 public class ClusterDataWriter {
 	

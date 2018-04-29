@@ -1,4 +1,4 @@
-package com.trema.pcpn.util;
+package com.trema.prcpn.similarity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

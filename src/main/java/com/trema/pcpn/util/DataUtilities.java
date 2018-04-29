@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -35,6 +36,18 @@ import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class DataUtilities {
+	
+	public static HashMap<String, double[]> getParaRandomVecMap(Properties pr, ArrayList<String> paraids){
+		HashMap<String, double[]> paraVecMap = new HashMap<String, double[]>();
+		Random r = new Random(100);
+		for(String paraid:paraids) {
+			double[] randomVec = new double[50];
+			for(int i=0; i<randomVec.length; i++)
+				randomVec[i] = r.nextDouble();
+			paraVecMap.put(paraid, randomVec);
+		}
+		return paraVecMap;
+	}
 	
 	public static HashMap<String, double[]> getParaTFIDFVecMap(Properties pr, ArrayList<String> paraids){
 		HashMap<String, double[]> paraVecMap = new HashMap<String, double[]>();
@@ -408,6 +421,49 @@ public class DataUtilities {
 			e.printStackTrace();
 		}
 		return pageParaMap;
+	}
+	
+	public static double getDotProduct(double[] a, double[] b){
+		double val = 0;
+		for(int i=0; i<a.length; i++)
+			val+=a[i]*b[i];
+		val = val/a.length;
+		return val;
+	}
+	
+	/**
+	 * This method converts string to list of tokens sorted on term frequency 
+	 * @param analyzer
+	 * @param string
+	 * @return
+	 */
+	public static ArrayList<String> getTopFrequentTokens(Analyzer analyzer, String string, int topNum){
+	    ArrayList<String> result = new ArrayList<String>();
+	    Map<String, Integer> termFreq = new HashMap<String, Integer>();
+	    String token;
+	    try {
+	    	TokenStream stream  = analyzer.tokenStream(null, new StringReader(string));
+	    	stream.reset();
+	    	while (stream.incrementToken()){
+	    		token = stream.getAttribute(CharTermAttribute.class).toString();
+	    		if(termFreq.keySet().contains(token))
+	    			termFreq.put(token, termFreq.get(token)+1);
+	    		else
+	    			termFreq.put(token, 1);
+	    	}
+	    	stream.close();
+	    } catch (IOException e) {
+	    	throw new RuntimeException(e);
+	    }
+	    Map<String, Integer> sortedTermFreq = MapUtil.sortByValue(termFreq);
+	    int count = 0;
+	    for(Map.Entry<String, Integer> entry : sortedTermFreq.entrySet()){
+	    	result.add(entry.getKey());
+	    	count++;
+	    	if(count>=topNum)
+	    		break;
+	    }
+	    return result;
 	}
 	
 	public static List<String> stopwords = Arrays.asList("a", "as", "able", "about",

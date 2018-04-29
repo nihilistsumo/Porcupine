@@ -46,6 +46,9 @@ public class PorcupineRunner {
 			else if(cmd.equalsIgnoreCase("mc")){
 				ph.runClusteringMeasure(prop);
 			}
+			else if(cmd.equalsIgnoreCase("sim")){
+				ph.runSimilarityRanker(prop, truePage, "wnwu");
+			}
 		} catch (IOException | ClassNotFoundException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -17,7 +17,7 @@ public class ClusterToRunfileWriter {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
 			HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = (HashMap<String, ArrayList<ArrayList<String>>>)ois.readObject();
 			ois.close();
-			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out")+"-cluster-runtemp")));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out")+"-cluster-run")));
 			HashMap<String, ArrayList<String>> outrunFileMap = new HashMap<String, ArrayList<String>>();
 			for(String page:resultPageClusters.keySet()) {
 				for(ArrayList<String> cl:resultPageClusters.get(page)) {
@@ -41,10 +41,7 @@ public class ClusterToRunfileWriter {
 				ArrayList<String> seenParaIDs = new ArrayList<String>();
 				for(String para:outrunFileMap.get(qp)) {
 					if(!seenParaIDs.contains(para)) {
-						if(qp.equalsIgnoreCase("f1f612e194dbc5964739677322529ca9a09ea429")||para.equalsIgnoreCase("f1f612e194dbc5964739677322529ca9a09ea429"))
-							System.out.println(qp+" Q0 "+para+" 0 1 CLUSTER-RUN");
-						else
-							bw.write(qp+" Q0 "+para+" 0 1 CLUSTER-RUN\n");
+						bw.write(qp+" Q0 "+para+" 0 1 CLUSTER-RUN\n");
 						seenParaIDs.add(para);
 					}
 				}	
