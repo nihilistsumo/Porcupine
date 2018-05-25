@@ -7,6 +7,8 @@ import java.util.Properties;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import com.trema.pcpn.parasim.ParasimFetFileWriter;
+
 public class PorcupineRunner {
 
 	public static void main(String[] args) {
@@ -17,6 +19,7 @@ public class PorcupineRunner {
 			PorcupineHelper ph = new PorcupineHelper();
 			String cmd = prop.getProperty("mode");
 			boolean truePage = false;
+			/*
 			if(cmd.charAt(0)=='t')
 				truePage = true;
 			if(cmd.endsWith("wvhac")){
@@ -49,7 +52,20 @@ public class PorcupineRunner {
 			else if(cmd.equalsIgnoreCase("sim")){
 				ph.runSimilarityRanker(prop, truePage, "wnwu");
 			}
-		} catch (IOException | ClassNotFoundException | ParseException e) {
+			*/
+			if(args[0].equalsIgnoreCase("fet")) {
+				ParasimFetFileWriter pfw = new ParasimFetFileWriter();
+				String fetFileOut = args[1];
+				String candRunFilePath = args[2];
+				String parasimQrelsPath = args[3];
+				boolean withTruePage;
+				if(args[4].equalsIgnoreCase("true"))
+					withTruePage = true;
+				else
+					withTruePage = false;
+				pfw.writeFetFile(prop, fetFileOut, candRunFilePath, parasimQrelsPath, withTruePage);
+			}
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
