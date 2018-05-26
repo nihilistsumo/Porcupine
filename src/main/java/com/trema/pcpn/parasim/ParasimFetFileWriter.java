@@ -47,45 +47,58 @@ public class ParasimFetFileWriter {
 		HashMap<String, double[]> gloveVecs = DataUtilities.readGloveFile(p);
 		int vecSize = gloveVecs.get("the").length;
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fetFileOut)));
-		StreamSupport.stream(pageParaMap.keySet().spliterator(), true).forEach(page -> {
+		//StreamSupport.stream(pageParaMap.keySet().spliterator(), true).forEach(page -> {
+		for(String page:pageParaMap.keySet()) {
 			try {
 				Analyzer analyzer = new StandardAnalyzer();
 				QueryParser qp = new QueryParser("paraid", analyzer);
 				ArrayList<String> parasInPage = pageParaMap.get(page);
 				HashMap<String, double[]> paraVecMap = DataUtilities.getParaW2VVecMap(p, parasInPage, gloveVecs, vecSize);
-				int count = 0;
+				//int count = 0;
 				System.out.println(parasInPage.size()*(parasInPage.size()-1)+" paragraph pairs are to be calculated in page "+page);
-				for(String p1:parasInPage) {
-					for(String p2:parasInPage) {
-						if(p1.equals(p2))
-							continue;
-						String p1Text = is.doc(is.search(qp.parse(p1), 1).scoreDocs[0].doc).get("parabody");
-						String p2Text = is.doc(is.search(qp.parse(p2), 1).scoreDocs[0].doc).get("parabody");
-						String fetLine = "";
-						ArrayList<String> relParas = parasimQrelsMap.get(p1);
-						if(relParas!=null && relParas.contains(p2))
-							fetLine = "1 qid:"+p1;
-						else
-							fetLine = "0 qid:"+p1;
-						fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
-								" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
-								" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
-								" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
-								" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(p1), paraVecMap.get(p2))+
-								" #"+p2;
-						//System.out.println(fetLine);
-						bw.write(fetLine+"\n");
+				HashMap<String, String> paraIDTextMap = new HashMap<String, String>();
+				for(String paraID:parasInPage)
+					paraIDTextMap.put(paraID, is.doc(is.search(qp.parse(paraID), 1).scoreDocs[0].doc).get("parabody"));
+				StreamSupport.stream(parasInPage.spliterator(), true).forEach(p1 -> {
+				//for(String p1:parasInPage) {
+					//for(String p2:parasInPage) {
+					StreamSupport.stream(parasInPage.spliterator(), true).forEach(p2 -> {
+						try {
+							if(!p1.equals(p2)) {
+								String p1Text = paraIDTextMap.get(p1);
+								String p2Text = paraIDTextMap.get(p2);
+								String fetLine = "";
+								ArrayList<String> relParas = parasimQrelsMap.get(p1);
+								if(relParas!=null && relParas.contains(p2))
+									fetLine = "1 qid:"+p1;
+								else
+									fetLine = "0 qid:"+p1;
+								fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
+										" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
+										" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
+										" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
+										" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(p1), paraVecMap.get(p2))+
+										" #"+p2;
+								//System.out.println(fetLine);
+								bw.write(fetLine+"\n");
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						/*
 						count++;
 						if(count%1000==0)
 							System.out.println("1000 paragraph pairs done in page "+page);
-					}
-				}
+						*/
+					});
+				});
 				System.out.println("Page: "+page+" done\n");
 			} catch (IOException | ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		});
+		}
 		bw.close();
 	}
 
