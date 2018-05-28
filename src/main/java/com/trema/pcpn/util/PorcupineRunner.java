@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.parasim.ParasimFetFileWriter;
+import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
 
 public class PorcupineRunner {
 
@@ -54,7 +55,7 @@ public class PorcupineRunner {
 			}
 			*/
 			if(args[0].equalsIgnoreCase("fet")) {
-				ParasimFetFileWriter pfw = new ParasimFetFileWriter();
+				ParasimFetFileWriterShort pfw = new ParasimFetFileWriterShort();
 				String fetFileOut = args[1];
 				String candRunFilePath = args[2];
 				String parasimQrelsPath = args[3];
@@ -65,7 +66,7 @@ public class PorcupineRunner {
 					withTruePage = false;
 				pfw.writeFetFile(prop, fetFileOut, candRunFilePath, parasimQrelsPath, withTruePage);
 			}
-		} catch (IOException e) {
+		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
