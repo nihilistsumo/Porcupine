@@ -64,6 +64,7 @@ public class ParasimFetFileWriterShort {
 			ArrayList<String> simParas = parasimQrelsMap.get(keyPara);
 			ArrayList<String> nonSimParas = new ArrayList<String>();
 			int rndIndex = 0;
+			//non-sim paras are those paragraphs which do not fall inside same top-level heading with keypara; they might be from different pages than keypara
 			for(int i=0; i<2*simParas.size(); i++) {
 				rndIndex = rnd.nextInt(allParas.size());
 				while(simParas.contains(allParas.get(rndIndex)))

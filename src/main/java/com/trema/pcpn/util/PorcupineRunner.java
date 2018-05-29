@@ -9,6 +9,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.parasim.ParasimFetFileWriter;
 import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
+import com.trema.prcpn.similarity.ParaSimRanker;
 
 public class PorcupineRunner {
 
@@ -65,6 +66,16 @@ public class PorcupineRunner {
 				else
 					withTruePage = false;
 				pfw.writeFetFile(prop, fetFileOut, candRunFilePath, parasimQrelsPath, withTruePage);
+			}
+			else if(args[0].equalsIgnoreCase("r")) {
+				ParaSimRanker psr = new ParaSimRanker();
+				String method = args[1];
+				String runFileOut = args[2];
+				String candRunFilePath = args[3];
+				boolean withTruePage = false;
+				if(args[4].equalsIgnoreCase("true"))
+					withTruePage = true;
+				psr.rank(prop, method, runFileOut, candRunFilePath, withTruePage);
 			}
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block

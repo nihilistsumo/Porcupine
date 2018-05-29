@@ -79,6 +79,22 @@ public class DataUtilities {
 		return paraVecMap;
 	}
 	
+	public static double[] getParaW2VVec(Properties pr, String paraid, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{
+		double[] paraVec = new double[vecSize];
+		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(pr.getProperty("index-dir")).toPath()))));
+		Analyzer analyzer = new StandardAnalyzer();
+		QueryParser qp = new QueryParser("paraid", analyzer);
+		Document para;
+		//int p = 1;
+		//System.out.println("Getting para vectors from glove");
+		para = is.doc(is.search(qp.parse(paraid), 1).scoreDocs[0].doc);
+		HashMap<String, Double> tokenTfidfMap = tokenTfidfMap(is, analyzer, para.get("parabody"));
+		//getAvgParaVec() is expensive op
+		paraVec = getAvgParaVec(tokenTfidfMap, tokenVecMap, vecSize);
+		//p++;
+		return paraVec;
+	}
+	
 	public static HashMap<String, double[]> getSecVecMap(Properties pr, ArrayList<String> secids, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{
 		HashMap<String, double[]> secVecMap = new HashMap<String, double[]>();
 		Analyzer analyzer = new StandardAnalyzer();
