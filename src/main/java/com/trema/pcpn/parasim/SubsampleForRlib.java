@@ -1,8 +1,22 @@
 package com.trema.pcpn.parasim;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.Random;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.store.FSDirectory;
 
 import com.trema.pcpn.util.DataUtilities;
 
@@ -88,7 +102,39 @@ public class SubsampleForRlib {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		try {
+			Properties p = new Properties();
+			p.load(new FileInputStream(new File("project.properties")));
+			SubsampleForRlib sample = new SubsampleForRlib();
+			HashMap<String, ArrayList<String>> paraMap = sample.detailedSubSample(p.getProperty("data-dir")+"/"+p.getProperty("top-qrels"), p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(p.getProperty("index-dir")).toPath()))));
+			Analyzer analyzer = new StandardAnalyzer();
+			QueryParser qp = new QueryParser("paraid", analyzer);
+			int count = 0;
+			BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/sumanta/Documents/Porcupine-data/Porcupine-results/debug-and-excel-sheets/simpara-report")));
+			for(String keyPara:paraMap.keySet()) {
+				ArrayList<String> cand = paraMap.get(keyPara);
+				bw.write("Keypara: "+keyPara+" in top-level section: "+cand.get(3)+"\n");
+				bw.write("-------------------------------------\n");
+				bw.write(is.doc(is.search(qp.parse(keyPara), 1).scoreDocs[0].doc).get("parabody")+"\n");
+				bw.write("\nRelpara: "+cand.get(0)+"\n");
+				bw.write("-------------------------------------\n");
+				bw.write(is.doc(is.search(qp.parse(cand.get(0)), 1).scoreDocs[0].doc).get("parabody")+"\n");
+				bw.write("\nnonRelpara in page: "+cand.get(1)+"\n");
+				bw.write("-------------------------------------\n");
+				bw.write(is.doc(is.search(qp.parse(cand.get(1)), 1).scoreDocs[0].doc).get("parabody")+"\n");
+				bw.write("\nnonRelpara outside page: "+cand.get(2)+" from page: "+cand.get(4)+"\n");
+				bw.write("-------------------------------------\n");
+				bw.write(is.doc(is.search(qp.parse(cand.get(2)), 1).scoreDocs[0].doc).get("parabody")+"\n\n\n\n");
+				count++;
+				if(count>=100)
+					break;
+			}
+			bw.close();
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -43,12 +43,16 @@ public class SimilarityCalculator {
 				break;
 			}
 		}
+		else {
+			System.out.println("NULL in paraText encountered");
+		}
 		return simScore;
 	}
 	
 	public double calculateW2VCosineSimilarity(double[] vec1, double[] vec2) {
 		double simScore = 0.0;
-		simScore = this.getDotProduct(vec1, vec2)/(this.getSquaredSum(vec1)*this.getSquaredSum(vec2));
+		if(vec1!=null && vec2!=null)
+			simScore = this.getDotProduct(vec1, vec2)/(this.getSquaredSum(vec1)*this.getSquaredSum(vec2));
 		return simScore;
 	}
 	

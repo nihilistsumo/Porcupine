@@ -45,43 +45,51 @@ public class ParasimFetFileWriterShort {
 		int vecSize = gloveVecs.get("the").length;
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fetFileOut)));
 		Analyzer analyzer = new StandardAnalyzer();
-		QueryParser qp = new QueryParser("paraid", analyzer);
+		//QueryParser qp = new QueryParser("paraid", analyzer);
 		ArrayList<String> allParas = new ArrayList<String>(parasimQrelsMap.keySet());
 		HashMap<String, double[]> paraVecMap = DataUtilities.getParaW2VVecMap(p, allParas, gloveVecs, vecSize);
 		//int count = 0;
 		//System.out.println(parasInPage.size()*(parasInPage.size()-1)+" paragraph pairs are to be calculated in page "+page);
+		/*
 		HashMap<String, String> paraIDTextMap = new HashMap<String, String>();
 		for(String paraID:allParas)
 			paraIDTextMap.put(paraID, is.doc(is.search(qp.parse(paraID), 1).scoreDocs[0].doc).get("parabody"));
+		*/
 		//System.out.println("Total paras: "+parasimQrelsMap.size());
 		SubsampleForRlib sample = new SubsampleForRlib();
 		HashMap<String, ArrayList<String>> paraMap = sample.subSample(p.getProperty("data-dir")+"/"+p.getProperty("top-qrels"), p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
 		System.out.println("No. of queries to be included in rlib fet file: "+paraMap.size());
 		StreamSupport.stream(paraMap.keySet().spliterator(), true).forEach(keyPara -> {
-			ArrayList<String> simParas = parasimQrelsMap.get(keyPara);
-			for(String candPara:paraMap.get(keyPara)) {
-				String p1Text = paraIDTextMap.get(keyPara);
-				String p2Text = paraIDTextMap.get(candPara);
-				String fetLine = "";
-				if(simParas.contains(candPara))
-					fetLine+="1 qid:"+keyPara;
-				else
-					fetLine+="0 qid:"+keyPara;
-				fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
-						" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
-						" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
-						" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
-						" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(keyPara), paraVecMap.get(candPara))+
-						" #"+candPara;
-				//System.out.println(fetLine);
-				try {
-					bw.write(fetLine+"\n");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			try {
+				ArrayList<String> simParas = parasimQrelsMap.get(keyPara);
+				QueryParser qp = new QueryParser("paraid", analyzer);
+				for(String candPara:paraMap.get(keyPara)) {
+					String p1Text = is.doc(is.search(qp.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+					String p2Text = is.doc(is.search(qp.parse(candPara), 1).scoreDocs[0].doc).get("parabody");
+					String fetLine = "";
+					if(simParas.contains(candPara))
+						fetLine+="1 qid:"+keyPara;
+					else
+						fetLine+="0 qid:"+keyPara;
+					fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
+							" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
+							" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
+							" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
+							" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(keyPara), paraVecMap.get(candPara))+
+							" #"+candPara;
+					//System.out.println(fetLine);
+					try {
+						bw.write(fetLine+"\n");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				System.out.println(keyPara+" done");
+			} catch (IOException | ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			System.out.println(keyPara+" done");
 		});
 		/*
 		StreamSupport.stream(parasimQrelsMap.keySet().spliterator(), true).forEach(keyPara -> {
