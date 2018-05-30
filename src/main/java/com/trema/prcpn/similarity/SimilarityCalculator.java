@@ -11,35 +11,37 @@ public class SimilarityCalculator {
 	
 	public double calculateWordnetSimilarity(ILexicalDatabase db, String paraText1, String paraText2, String method) {
 		double simScore = 0.0;
-		String[] tokens1 = paraText1.toLowerCase().split(" ");
-		String[] tokens2 = paraText2.toLowerCase().split(" ");
-		//ILexicalDatabase db = new NictWordNet();
-		double[][] simMatrix;
-		switch(method) {
-		case "ji":
-			JiangConrath ji = new JiangConrath(db);
-			simMatrix = ji.getNormalizedSimilarityMatrix(tokens1, tokens2);
-			simScore = this.avgMatrix(simMatrix);
-			//System.out.println(simScore);
-			break;
-		case "pat":
-			Path pat = new Path(db);
-			simMatrix = pat.getNormalizedSimilarityMatrix(tokens1, tokens2);
-			simScore = this.avgMatrix(simMatrix);
-			//System.out.println(simScore);
-			break;
-		case "wu":
-			WuPalmer wu = new WuPalmer(db);
-			simMatrix = wu.getNormalizedSimilarityMatrix(tokens1, tokens2);
-			simScore = this.avgMatrix(simMatrix);
-			//System.out.println(simScore);
-			break;
-		case "lin":
-			Lin lin = new Lin(db);
-			simMatrix = lin.getNormalizedSimilarityMatrix(tokens1, tokens2);
-			simScore = this.avgMatrix(simMatrix);
-			//System.out.println(simScore);
-			break;
+		if(paraText1!=null && paraText2!=null) {
+			String[] tokens1 = paraText1.toLowerCase().split(" ");
+			String[] tokens2 = paraText2.toLowerCase().split(" ");
+			//ILexicalDatabase db = new NictWordNet();
+			double[][] simMatrix;
+			switch(method) {
+			case "ji":
+				JiangConrath ji = new JiangConrath(db);
+				simMatrix = ji.getNormalizedSimilarityMatrix(tokens1, tokens2);
+				simScore = this.avgMatrix(simMatrix);
+				//System.out.println(simScore);
+				break;
+			case "pat":
+				Path pat = new Path(db);
+				simMatrix = pat.getNormalizedSimilarityMatrix(tokens1, tokens2);
+				simScore = this.avgMatrix(simMatrix);
+				//System.out.println(simScore);
+				break;
+			case "wu":
+				WuPalmer wu = new WuPalmer(db);
+				simMatrix = wu.getNormalizedSimilarityMatrix(tokens1, tokens2);
+				simScore = this.avgMatrix(simMatrix);
+				//System.out.println(simScore);
+				break;
+			case "lin":
+				Lin lin = new Lin(db);
+				simMatrix = lin.getNormalizedSimilarityMatrix(tokens1, tokens2);
+				simScore = this.avgMatrix(simMatrix);
+				//System.out.println(simScore);
+				break;
+			}
 		}
 		return simScore;
 	}
