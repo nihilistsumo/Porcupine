@@ -28,14 +28,6 @@ public class ParaSimRanker {
 	
 	public void rank(Properties p, String method, String runFileOut, String candRunFilePath, boolean withTruePage) throws IOException, ParseException {
 		HashMap<String, HashMap<String, Double>> paraPairRun = new HashMap<String, HashMap<String, Double>>();
-		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-		/*
-		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
-				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
-		*/
-		
-		//IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(p.getProperty("index-dir")).toPath()))));
-		//HashMap<String, ArrayList<String>> parasimQrelsMap = DataUtilities.getGTMapQrels(parasimQrelsPath);
 		HashMap<String, ArrayList<String>> pageParaMap;
 		ArrayList<String> allParas;
 		if(withTruePage)
@@ -55,15 +47,13 @@ public class ParaSimRanker {
 		for(String page:pageParaMap.keySet())
 			uniqueParas.addAll(pageParaMap.get(page));
 		allParas = new ArrayList<String>(uniqueParas);
-		/*
-		for(String paraID:allParas)
-			paraIDTextMap.put(paraID, is.doc(is.search(qp.parse(paraID), 1).scoreDocs[0].doc).get("parabody"));
-		*/
-		//HashMap<String, double[]> paraVecMap;
-		//paraVecMap = DataUtilities.getParaW2VVecMap(p, allParas, gloveVecs, vecSize);
-		StreamSupport.stream(pageParaMap.keySet().spliterator(), true).forEach(page -> {
+		//StreamSupport.stream(pageParaMap.keySet().spliterator(), true).forEach(page -> {
+		int pageCount = 0;
+		for(String page:pageParaMap.keySet()) {
 			ArrayList<String> parasInPage = pageParaMap.get(page);
-			StreamSupport.stream(parasInPage.spliterator(), true).forEach(para1 -> {
+			//StreamSupport.stream(parasInPage.spliterator(), true).forEach(para1 -> {
+			for(int j=0; j<parasInPage.size(); j++) {
+				String para1 = parasInPage.get(j);
 				StreamSupport.stream(parasInPage.spliterator(), true).forEach(para2 -> {
 					try {
 						double simScore = 0;
@@ -77,15 +67,18 @@ public class ParaSimRanker {
 						else 
 							simScore = sc.calculateW2VCosineSimilarity(DataUtilities.getParaW2VVec(p, para1, gloveVecs, vecSize), DataUtilities.getParaW2VVec(p, para2, gloveVecs, vecSize));
 						bw.write(para1+" Q0 "+para2+" 0 "+simScore+" PARASIM-"+method+"\n");
+						System.out.print(para2+" is done\r");
 						//System.out.println(para1+" Q0 "+para2+" 0 "+simScore+" PARASIM-"+method);
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				});
-			});
-			System.out.println(page+" is done");
-		});
+				System.out.print("All similarities for "+para1+" is calculated, "+(parasInPage.size()-(j+1))+" to go\r");
+			}
+			pageCount++;
+			System.out.println(pageCount+": "+page+" is done, "+(pageParaMap.size()-pageCount)+" pages to go");
+		}
 		bw.close();
 	}
 
