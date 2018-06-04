@@ -56,28 +56,28 @@ public class ParaSimQrelsWriter {
 		}
 		br.close();
 		
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(this.p.getProperty("out-dir")+"/"+this.qrelsFilename)));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(this.qrelsFilename)));
 		ArrayList<String> plist;
 		HashMap<String, ArrayList<String>> paraQrels = new HashMap<String, ArrayList<String>>();
 		for(String qid:inputQrels.keySet()){
 			plist = inputQrels.get(qid);
 			for(String pid:plist){
-				if(paraQrels.keySet().contains(pid)) {
+				if(paraQrels.keySet().contains(qid.split("/")[0]+":"+pid)) {
 					for(String simpid:plist){
-						if(!pid.equals(simpid) && !paraQrels.get(pid).contains(simpid))
-							paraQrels.get(pid).add(simpid);
+						if(!pid.equals(simpid) && !paraQrels.get(qid.split("/")[0]+":"+pid).contains(simpid))
+							paraQrels.get(qid.split("/")[0]+":"+pid).add(simpid);
 					}
 				}
 				else {
 					ArrayList<String> simlist = new ArrayList(plist);
 					simlist.remove(pid);
-					paraQrels.put(pid, simlist);
+					paraQrels.put(qid.split("/")[0]+":"+pid, simlist);
 				}
 			}
 		}
-		for(String paraid1:paraQrels.keySet()) {
-			for(String paraid2:paraQrels.get(paraid1))
-				bw.write(paraid1+" 0 "+paraid2+" 1\n");
+		for(String qpara:paraQrels.keySet()) {
+			for(String relpara:paraQrels.get(qpara))
+				bw.write(qpara+" 0 "+relpara+" 1\n");
 		}
 		bw.close();
 	}
@@ -87,7 +87,7 @@ public class ParaSimQrelsWriter {
 		Properties prop = new Properties();
 		try {
 			prop.load(new FileInputStream(new File("project.properties")));
-			ParaSimQrelsWriter pw = new ParaSimQrelsWriter(prop, "simpara-train-hier-for-cluster.qrels", "hier");
+			ParaSimQrelsWriter pw = new ParaSimQrelsWriter(prop, "/home/sumanta/Documents/Porcupine-data/Porcupine-results/qrels/simpara-train-art-for-cluster.qrels", "art");
 			pw.printQrels();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

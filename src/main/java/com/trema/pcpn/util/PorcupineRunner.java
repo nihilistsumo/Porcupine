@@ -5,11 +5,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.parasim.ParasimFetFileWriter;
 import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
+import com.trema.prcpn.similarity.ParaSimRankerQueryParatext;
 
 public class PorcupineRunner {
 
@@ -68,7 +70,7 @@ public class PorcupineRunner {
 				pfw.writeFetFile(prop, fetFileOut, candRunFilePath, parasimQrelsPath, withTruePage);
 			}
 			//Index paragraphs
-			// -i index-directory-path paragraph-cbor-path with-entity?(entity/Entity/...)
+			// i index-directory-path paragraph-cbor-path with-entity?(entity/Entity/...)
 			else if(args[0].equalsIgnoreCase("i")) {
 				LuceneIndexer li = new LuceneIndexer();
 				String indexOutPath = args[1];
@@ -92,6 +94,16 @@ public class PorcupineRunner {
 				if(args[4].equalsIgnoreCase("true"))
 					withTruePage = true;
 				psr.rank(prop, method, runFileOut, candRunFilePath, withTruePage);
+			}
+			else if(args[0].equalsIgnoreCase("rpara")) {
+				ParaSimRankerQueryParatext psrqp = new ParaSimRankerQueryParatext();
+				String indexDir = args[1];
+				String indexDirNoStops = args[2];
+				String candRun = args[3];
+				String outRun = args[4];
+				String method = args[5];
+				int retNo = Integer.parseInt(args[6]);
+				psrqp.rank(indexDir, indexDirNoStops, candRun, outRun, method, retNo);
 			}
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
