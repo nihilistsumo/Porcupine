@@ -67,6 +67,22 @@ public class PorcupineRunner {
 					withTruePage = false;
 				pfw.writeFetFile(prop, fetFileOut, candRunFilePath, parasimQrelsPath, withTruePage);
 			}
+			//Index paragraphs
+			// -i index-directory-path paragraph-cbor-path with-entity?(entity/Entity/...)
+			else if(args[0].equalsIgnoreCase("i")) {
+				LuceneIndexer li = new LuceneIndexer();
+				String indexOutPath = args[1];
+				String paraCborPath = args[2];
+				String withEnt = args[3];
+				String removeSt = args[4];
+				boolean withEntity = false;
+				boolean removeStops = false;
+				if(withEnt.startsWith("ent")||withEnt.startsWith("Ent")||withEnt.startsWith("ENT"))
+					withEntity = true;
+				if(removeSt.startsWith("stop")||removeSt.startsWith("STOP"))
+					removeStops = true;
+				li.indexParas(indexOutPath, paraCborPath, withEntity, removeStops);
+			}
 			else if(args[0].equalsIgnoreCase("r")) {
 				ParaSimRanker psr = new ParaSimRanker();
 				String method = args[1];

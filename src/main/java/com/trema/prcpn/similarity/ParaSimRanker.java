@@ -67,7 +67,7 @@ public class ParaSimRanker {
 						else 
 							simScore = sc.calculateW2VCosineSimilarity(DataUtilities.getParaW2VVec(p, para1, gloveVecs, vecSize), DataUtilities.getParaW2VVec(p, para2, gloveVecs, vecSize));
 						bw.write(para1+" Q0 "+para2+" 0 "+simScore+" PARASIM-"+method+"\n");
-						System.out.print(para2+" is done\r");
+						//System.out.print(para2+" is done\r");
 						//System.out.println(para1+" Q0 "+para2+" 0 "+simScore+" PARASIM-"+method);
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
@@ -77,7 +77,7 @@ public class ParaSimRanker {
 				System.out.print("All similarities for "+para1+" is calculated, "+(parasInPage.size()-(j+1))+" to go\r");
 			}
 			pageCount++;
-			System.out.println(pageCount+": "+page+" is done, "+(pageParaMap.size()-pageCount)+" pages to go");
+			System.out.println("\n"+pageCount+": "+page+" is done, "+(pageParaMap.size()-pageCount)+" pages to go");
 		}
 		bw.close();
 	}

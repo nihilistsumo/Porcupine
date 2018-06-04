@@ -91,63 +91,17 @@ public class ParasimFetFileWriterShort {
 				e.printStackTrace();
 			}
 		});
-		/*
-		StreamSupport.stream(parasimQrelsMap.keySet().spliterator(), true).forEach(keyPara -> {
-			ArrayList<String> simParas = parasimQrelsMap.get(keyPara);
-			ArrayList<String> nonSimParas = new ArrayList<String>();
-			int rndIndex = 0;
-			//non-sim paras are those paragraphs which do not fall inside same top-level heading with keypara; they might be from different pages than keypara
-			for(int i=0; i<2*simParas.size(); i++) {
-				rndIndex = rnd.nextInt(allParas.size());
-				while(simParas.contains(allParas.get(rndIndex)))
-					rndIndex = rnd.nextInt(allParas.size());
-				nonSimParas.add(allParas.get(rndIndex));
-			}
-			for(String simPara:simParas) {
-				if(!keyPara.equals(simPara)) {
-					String p1Text = paraIDTextMap.get(keyPara);
-					String p2Text = paraIDTextMap.get(simPara);
-					String fetLine = "1 qid:"+keyPara;
-					fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
-							" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
-							" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
-							" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
-							" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(keyPara), paraVecMap.get(simPara))+
-							" #"+simPara;
-					//System.out.println(fetLine);
-					try {
-						bw.write(fetLine+"\n");
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-			//System.out.println("Writing relevant features complete for "+keyPara);
-			for(String nonSimPara:nonSimParas) {
-				if(!keyPara.equals(nonSimPara)) {
-					String p1Text = paraIDTextMap.get(keyPara);
-					String p2Text = paraIDTextMap.get(nonSimPara);
-					String fetLine = "0 qid:"+keyPara;
-					fetLine+=" 1:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "ji")+
-							" 2:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "pat")+
-							" 3:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "wu")+
-							" 4:"+sc.calculateWordnetSimilarity(db, p1Text, p2Text, "lin")+
-							" 5:"+sc.calculateW2VCosineSimilarity(paraVecMap.get(keyPara), paraVecMap.get(nonSimPara))+
-							" #"+nonSimPara;
-					//System.out.println(fetLine);
-					try {
-						bw.write(fetLine+"\n");
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-			System.out.println("Writing features complete for "+keyPara);
-		});
-		*/
 		bw.close();
+	}
+	
+	private String removeStopWords(String inputText) {
+		String processedText = "";
+		String[] inputTokens = inputText.split(" ");
+		for(String token:inputTokens) {
+			if(!DataUtilities.stopwords.contains(token))
+				processedText+=token+" ";
+		}
+		return processedText.trim();
 	}
 
 	public static void main(String[] args) {

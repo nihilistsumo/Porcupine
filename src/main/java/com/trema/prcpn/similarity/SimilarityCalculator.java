@@ -104,6 +104,7 @@ public class SimilarityCalculator {
 		SimilarityCalculator sc = new SimilarityCalculator();
 		System.out.println("Jiang");
 		ILexicalDatabase db = new NictWordNet();
+		/*
 		sc.calculateWordnetSimilarity(db, s1, s2, "ji");
 		sc.calculateWordnetSimilarity(db, s1, s3, "ji");
 		sc.calculateWordnetSimilarity(db, s3, s2, "ji");
@@ -117,7 +118,7 @@ public class SimilarityCalculator {
 		sc.calculateWordnetSimilarity(db, s1, s2, "wu");
 		sc.calculateWordnetSimilarity(db, s1, s3, "wu");
 		sc.calculateWordnetSimilarity(db, s3, s2, "wu");
-		
+		*/
 		System.out.println("Lin");
 		sc.calculateWordnetSimilarity(db, s1, s2, "lin");
 		sc.calculateWordnetSimilarity(db, s1, s3, "lin");
