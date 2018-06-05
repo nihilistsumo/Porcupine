@@ -16,6 +16,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -55,6 +56,7 @@ public class ParaSimRankerQueryParatext {
 					QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
 					HashMap<String, Float> retrievedResult = new HashMap<String, Float>();
 					String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+					BooleanQuery.setMaxClauseCount(65536);
 					Query q = qp.parse(QueryParser.escape(queryString));
 					TopDocs tds = is.search(q, retNo*5);
 					ScoreDoc[] retDocs = tds.scoreDocs;
