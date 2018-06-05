@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import com.trema.pcpn.parasim.CombineRunFilesToRLibFetFile;
 import com.trema.pcpn.parasim.ParasimFetFileWriter;
 import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
@@ -105,7 +106,14 @@ public class PorcupineRunner {
 				int retNo = Integer.parseInt(args[6]);
 				psrqp.rank(indexDir, indexDirNoStops, candRun, outRun, method, retNo);
 			}
-		} catch (IOException | ParseException e) {
+			else if(args[0].equalsIgnoreCase("cmb")) {
+				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();
+				String runfilesDir = args[1];
+				String outputFetFilePath = args[2];
+				String qrelsPath = args[3];
+				cmb.writeFetFile(prop, runfilesDir, outputFetFilePath, qrelsPath);
+			}
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
