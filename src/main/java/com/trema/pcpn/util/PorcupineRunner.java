@@ -9,10 +9,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.parasim.CombineRunFilesToRLibFetFile;
+import com.trema.pcpn.parasim.CombineRunFilesUsingRlibModel;
 import com.trema.pcpn.parasim.ParasimFetFileWriter;
 import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
 import com.trema.prcpn.similarity.ParaSimRankerQueryParatext;
+
 
 public class PorcupineRunner {
 
@@ -112,6 +114,22 @@ public class PorcupineRunner {
 				String outputFetFilePath = args[2];
 				String qrelsPath = args[3];
 				cmb.writeFetFile(prop, runfilesDir, outputFetFilePath, qrelsPath);
+			}
+			else if(args[0].equalsIgnoreCase("split")) {
+				TwoFoldRunfileSplit split = new TwoFoldRunfileSplit();
+				String runfilesDir = args[1];
+				String titlesPath = args[2];
+				String outputDir1 = args[3];
+				String outputDir2 = args[4];
+				split.startProcess(runfilesDir, titlesPath, outputDir1, outputDir2);
+			}
+			else if(args[0].equalsIgnoreCase("cmbrun")){ 
+				String runfilesDir = args[1];
+				String rlibModelPath = args[2];
+				String outputRunfilePath = args[3];
+				int retParaInComb = Integer.parseInt(args[4]);
+				CombineRunFilesUsingRlibModel cmbrun = new CombineRunFilesUsingRlibModel();
+				cmbrun.writeRunFile(prop, runfilesDir, rlibModelPath, outputRunfilePath, retParaInComb);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
