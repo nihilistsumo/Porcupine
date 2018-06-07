@@ -2,8 +2,6 @@
 
 #trecdir=/home/sumanta/Documents/Mongoose-data/trec-data/benchmarkY1-train
 trecdir=/home/sk1105/sumanta/cs980assign/benchmarkY1/benchmarkY1-train
-#cvdir=/home/sumanta/Documents/Mongoose-data/Mongoose-results/hier-runs-basic-sim-and-fixed/cv
-cvdir=/home/sk1105/sumanta/porcupine-parasim/cv-results
 #jardir=/home/sumanta/git/Mongoose/target
 jardir=/home/sk1105/sumanta/porcupine-2cv/Porcupine/target
 #rlib=~/Softwares
@@ -28,6 +26,7 @@ echo "Fet file created"
 java -jar $rlib/RankLib-2.1-patched.jar -train $2/parasim-paratext-tr1tst2-fet -ranker 4 -metric2t MAP -save $2/parasim-paratext-tr1tst2-model
 echo "Combining..."
 java -jar $jardir/$jarname cmbrun $2/runs-set2 $2/parasim-paratext-tr1tst2-model $2/parasim-paratext-tr1tst2-comb-run 200
+java -jar $jardir/$jarname cmbrun $2/runs-set1 $2/parasim-paratext-tr1tst2-model $2/parasim-paratext-tr1tst1-comb-run 200
 echo "Combined"
 
 # Set 2 as train, Set 1 as test
@@ -39,8 +38,10 @@ echo "Fet file created"
 java -jar $rlib/RankLib-2.1-patched.jar -train $2/parasim-paratext-tr2tst1-fet -ranker 4 -metric2t MAP -save $2/parasim-paratext-tr2tst1-model
 echo "Combining..."
 java -jar $jardir/$jarname cmbrun $2/runs-set1 $2/parasim-paratext-tr2tst1-model $2/parasim-paratext-tr2tst1-comb-run 200
+java -jar $jardir/$jarname cmbrun $2/runs-set2 $2/parasim-paratext-tr2tst1-model $2/parasim-paratext-tr2tst2-comb-run 200
 echo "Combined"
 
 # Concat two combined run files
-cat $2/parasim-paratext-tr1tst2-comb-run $2/parasim-paratext-tr2tst1-comb-run >> $2/parasim-paratext-comb-run
-echo "Complete! Final run file stored at $2/parasim-paratext-comb-run"
+cat $2/parasim-paratext-tr1tst2-comb-run $2/parasim-paratext-tr2tst1-comb-run >> $2/parasim-paratext-comb-test-run
+cat $2/parasim-paratext-tr1tst1-comb-run $2/parasim-paratext-tr2tst2-comb-run >> $2/parasim-paratext-comb-train-run
+echo "Complete! Final run file stored at $2/parasim-paratext-comb-train/test-run"
