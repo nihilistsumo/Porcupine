@@ -71,7 +71,7 @@ public class CombineRunFilesToRLibFetFile {
 			for(String para:paras){
 				String fetFileLine = "";
 				if(qrels.get(q)==null){
-					System.out.println("No query in qrels as "+q);
+					//System.out.println("No query in qrels as "+q);
 					fetFileLine = "0 qid:"+q;
 				}
 				else {
