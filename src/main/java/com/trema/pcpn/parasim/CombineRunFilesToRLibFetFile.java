@@ -56,10 +56,12 @@ public class CombineRunFilesToRLibFetFile {
 			}
 		}
 		for(String q:qset) {
+			/*
 			if(qrels.get(q)==null){
 				System.out.println("No query in qrels as "+q);
 				continue;
 			}
+			*/
 			HashSet<String> paras = new HashSet<String>();
 			//paras.addAll(runfileObjList.get(0).get(q).keySet());
 			for(int i=0; i<runfileObjList.size(); i++) {
@@ -68,11 +70,17 @@ public class CombineRunFilesToRLibFetFile {
 			}
 			for(String para:paras){
 				String fetFileLine = "";
-				ArrayList<String> trueParas = qrels.get(q);
-				if(trueParas.contains(para))
-					fetFileLine = "1 qid:"+q;
-				else
+				if(qrels.get(q)==null){
+					System.out.println("No query in qrels as "+q);
 					fetFileLine = "0 qid:"+q;
+				}
+				else {
+					ArrayList<String> trueParas = qrels.get(q);
+					if(trueParas.contains(para))
+						fetFileLine = "1 qid:"+q;
+					else
+						fetFileLine = "0 qid:"+q;
+				}
 				int j = 1;
 				for(HashMap<String, HashMap<String, Double>> rf:runfileObjList){
 					if(!rf.containsKey(q))
