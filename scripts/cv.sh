@@ -3,7 +3,7 @@
 #trecdir=/home/sumanta/Documents/Mongoose-data/trec-data/benchmarkY1-train
 trecdir=/home/sk1105/sumanta/cs980assign/benchmarkY1/benchmarkY1-train
 #jardir=/home/sumanta/git/Mongoose/target
-jardir=/home/sk1105/sumanta/porcupine-2cv/Porcupine/target
+jardir=/home/sk1105/sumanta/porcupine-cv-new/Porcupine/target
 #rlib=~/Softwares
 rlib=/home/sk1105/sumanta
 jarname=porcupine-0.0.1-SNAPSHOT-jar-with-dependencies.jar
