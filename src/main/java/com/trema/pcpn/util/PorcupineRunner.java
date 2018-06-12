@@ -14,6 +14,7 @@ import com.trema.pcpn.parasim.ParasimFetFileWriter;
 import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
 import com.trema.prcpn.similarity.ParaSimRankerQueryParatext;
+import com.trema.prcpn.similarity.ParaSimRankerRand;
 
 
 public class PorcupineRunner {
@@ -107,6 +108,13 @@ public class PorcupineRunner {
 				String method = args[5];
 				int retNo = Integer.parseInt(args[6]);
 				psrqp.rank(indexDir, indexDirNoStops, candRun, outRun, method, retNo);
+			}
+			else if(args[0].equalsIgnoreCase("rrand")) {
+				ParaSimRankerRand psrr = new ParaSimRankerRand();
+				String candRunFilePath = args[1];
+				String runFileOut = args[2];
+				int retNo = Integer.parseInt(args[3]);
+				psrr.rank(candRunFilePath, runFileOut, retNo);
 			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();
