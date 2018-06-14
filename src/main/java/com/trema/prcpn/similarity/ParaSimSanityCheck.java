@@ -106,7 +106,7 @@ public class ParaSimSanityCheck {
 			HashMap<String, String> sampleRet = new HashMap<String, String>();
 			HashMap<String, String> sampleQrels = new HashMap<String, String>();
 			System.out.println(method+" started");
-			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
 				try {
 					ArrayList<String> retParas = sample.get(keyPara);
 					String rel = retParas.get(0);
@@ -146,7 +146,7 @@ public class ParaSimSanityCheck {
 			System.out.println(wnMethod+" started");
 			ILexicalDatabase db = new NictWordNet();
 			SimilarityCalculator sc = new SimilarityCalculator();
-			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
 				try {
 					ArrayList<String> retParas = sample.get(keyPara);
 					String rel = retParas.get(0);
