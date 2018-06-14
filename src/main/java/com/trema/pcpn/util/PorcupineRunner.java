@@ -119,25 +119,15 @@ public class PorcupineRunner {
 			}
 			else if(args[0].equalsIgnoreCase("san")) {
 				ParaSimSanityCheck san = new ParaSimSanityCheck();
-				String method = args[1];
-				String indexDir = args[2];
-				String indexDirNoStops = args[3];
-				String topQrelsPath = args[4];
-				String artQrelsPath = args[5];
-				String parasimQrelsPath = args[6];
-				int keyNo = Integer.parseInt(args[7]);
-				san.check(method, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
-			}
-			else if(args[0].equalsIgnoreCase("sanwn")) {
-				ParaSimSanityCheck san = new ParaSimSanityCheck();
-				String method = args[1];
-				String indexDir = args[2];
-				String indexDirNoStops = args[3];
-				String topQrelsPath = args[4];
-				String artQrelsPath = args[5];
-				String parasimQrelsPath = args[6];
-				int keyNo = Integer.parseInt(args[7]);
-				san.checkWordnet(method, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
+				String methods = args[1];
+				String wnMethods = args[2];
+				String indexDir = args[3];
+				String indexDirNoStops = args[4];
+				String topQrelsPath = args[5];
+				String artQrelsPath = args[6];
+				String parasimQrelsPath = args[7];
+				int keyNo = Integer.parseInt(args[8]);
+				san.check(methods, wnMethods, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
 			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();

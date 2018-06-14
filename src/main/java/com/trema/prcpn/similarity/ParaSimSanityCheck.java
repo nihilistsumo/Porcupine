@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.stream.StreamSupport;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -28,7 +29,7 @@ import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 
 public class ParaSimSanityCheck {
-	
+	/*
 	public void checkWordnet(String method, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, String parasimQrelsPath, int keyNo) throws IOException, ParseException {
 		//IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
@@ -72,23 +73,16 @@ public class ParaSimSanityCheck {
 		}
 		System.out.println("Precision@1 = "+(double)correctCount/sampleQrels.size());
 	}
-	
+	*/
 	// For lucene ret models
-	public void check(String method, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, String parasimQrelsPath, int keyNo) throws IOException, ParseException {
+	// methods to be tried are separated by :
+	public void check(String methods, String wnMethods, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, String parasimQrelsPath, int keyNo) throws IOException, ParseException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
-		if(method.equalsIgnoreCase("bm25"))
-			is.setSimilarity(new BM25Similarity());
-		else if(method.equalsIgnoreCase("bool"))
-			is.setSimilarity(new BooleanSimilarity());
-		else if(method.equalsIgnoreCase("classic"))
-			is.setSimilarity(new ClassicSimilarity());
-		else if(method.equalsIgnoreCase("lmds"))
-			is.setSimilarity(new LMDirichletSimilarity());
 		SubsampleForRlib sampler = new SubsampleForRlib();
 		HashMap<String, ArrayList<String>> sample = sampler.subSample(topQrelsPath, artQrelsPath);
-		HashMap<String, String> sampleQrels = new HashMap<String, String>();
-		HashMap<String, String> sampleRet = new HashMap<String, String>();
+		
+		
 		ArrayList<String> qparaset = new ArrayList<String>(sample.keySet());
 		ArrayList<String> qSoFar = new ArrayList<String>();
 		Random rand = new Random();
@@ -98,31 +92,92 @@ public class ParaSimSanityCheck {
 			while(qSoFar.contains(keyPara))
 				keyPara = qparaset.get(rand.nextInt(qparaset.size()));
 			qSoFar.add(keyPara);
-			ArrayList<String> retParas = sample.get(keyPara);
-			String rel = retParas.get(0);
-			sampleQrels.put(keyPara, rel);
-			QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
-			QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
-			String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
-			BooleanQuery.setMaxClauseCount(65536);
-			Query q = qp.parse(QueryParser.escape(queryString));
-			TopDocs tds = is.search(q, 100);
-			ScoreDoc[] retDocs = tds.scoreDocs;
-			for (int j = 0; j < retDocs.length; j++) {
-				Document d = is.doc(retDocs[j].doc);
-				String retParaID = d.getField("paraid").stringValue();
-				if(!retParaID.equals(keyPara) && retParas.contains(retParaID)) {
-					sampleRet.put(keyPara, retParaID);
-					break;
+		}
+		
+		for(String method:methods.split(":")) {
+			if(method.equalsIgnoreCase("bm25"))
+				is.setSimilarity(new BM25Similarity());
+			else if(method.equalsIgnoreCase("bool"))
+				is.setSimilarity(new BooleanSimilarity());
+			else if(method.equalsIgnoreCase("classic"))
+				is.setSimilarity(new ClassicSimilarity());
+			else if(method.equalsIgnoreCase("lmds"))
+				is.setSimilarity(new LMDirichletSimilarity());
+			HashMap<String, String> sampleRet = new HashMap<String, String>();
+			HashMap<String, String> sampleQrels = new HashMap<String, String>();
+			System.out.println(method+" started");
+			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+				try {
+					ArrayList<String> retParas = sample.get(keyPara);
+					String rel = retParas.get(0);
+					sampleQrels.put(keyPara, rel);
+					QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+					QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
+					String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+					BooleanQuery.setMaxClauseCount(65536);
+					Query q = qp.parse(QueryParser.escape(queryString));
+					TopDocs tds = is.search(q, 100);
+					ScoreDoc[] retDocs = tds.scoreDocs;
+					for (int j = 0; j < retDocs.length; j++) {
+						Document d = is.doc(retDocs[j].doc);
+						String retParaID = d.getField("paraid").stringValue();
+						if(!retParaID.equals(keyPara) && retParas.contains(retParaID)) {
+							sampleRet.put(keyPara, retParaID);
+							break;
+						}
+					}
+					System.out.print("Para "+keyPara+" done\r");
+				} catch (IOException | ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
+			});
+			int correctCount = 0;
+			for(String q:sampleRet.keySet()) {
+				if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
+					correctCount++;
 			}
+			System.out.println(method+" Precision@1 = "+(double)correctCount/sampleQrels.size());
 		}
-		int correctCount = 0;
-		for(String q:sampleRet.keySet()) {
-			if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
-				correctCount++;
+		
+		for(String wnMethod:wnMethods.split(":")) {
+			HashMap<String, String> sampleQrels = new HashMap<String, String>();
+			HashMap<String, String> sampleRet = new HashMap<String, String>();
+			System.out.println(wnMethod+" started");
+			ILexicalDatabase db = new NictWordNet();
+			SimilarityCalculator sc = new SimilarityCalculator();
+			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+				try {
+					ArrayList<String> retParas = sample.get(keyPara);
+					String rel = retParas.get(0);
+					sampleQrels.put(keyPara, rel);
+					QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+					QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
+					String topRet = "";
+					double topScore = 0;
+					for(String ret:retParas) {
+						String p1text = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+						String p2text = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
+						double currScore = sc.calculateWordnetSimilarity(db, p1text, p2text, wnMethod);
+						if(currScore>topScore) {
+							topRet = ret;
+							topScore = currScore;
+						}
+					}
+					sampleRet.put(keyPara, topRet);
+				} catch (IOException | ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.print("Para "+keyPara+" done\r");
+			});
+			int correctCount = 0;
+			for(String q:sampleRet.keySet()) {
+				if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
+					correctCount++;
+			}
+			System.out.println(wnMethod+" Precision@1 = "+(double)correctCount/sampleQrels.size());
 		}
-		System.out.println("Precision@1 = "+(double)correctCount/sampleQrels.size());
 	}
 
 }
