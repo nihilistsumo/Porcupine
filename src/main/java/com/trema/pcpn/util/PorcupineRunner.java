@@ -8,13 +8,14 @@ import java.util.Properties;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
-import com.trema.pcpn.parasim.CombineRunFilesToRLibFetFile;
-import com.trema.pcpn.parasim.CombineRunFilesUsingRlibModel;
-import com.trema.pcpn.parasim.ParasimFetFileWriter;
-import com.trema.pcpn.parasim.ParasimFetFileWriterShort;
+import com.trema.pcpn.parasimutil.CombineRunFilesToRLibFetFile;
+import com.trema.pcpn.parasimutil.CombineRunFilesUsingRlibModel;
+import com.trema.pcpn.parasimutil.ParasimFetFileWriter;
+import com.trema.pcpn.parasimutil.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
 import com.trema.prcpn.similarity.ParaSimRankerQueryParatext;
 import com.trema.prcpn.similarity.ParaSimRankerRand;
+import com.trema.prcpn.similarity.ParaSimSanityCheck;
 
 
 public class PorcupineRunner {
@@ -115,6 +116,28 @@ public class PorcupineRunner {
 				String runFileOut = args[2];
 				int retNo = Integer.parseInt(args[3]);
 				psrr.rank(candRunFilePath, runFileOut, retNo);
+			}
+			else if(args[0].equalsIgnoreCase("san")) {
+				ParaSimSanityCheck san = new ParaSimSanityCheck();
+				String method = args[1];
+				String indexDir = args[2];
+				String indexDirNoStops = args[3];
+				String topQrelsPath = args[4];
+				String artQrelsPath = args[5];
+				String parasimQrelsPath = args[6];
+				int keyNo = Integer.parseInt(args[7]);
+				san.check(method, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
+			}
+			else if(args[0].equalsIgnoreCase("sanwn")) {
+				ParaSimSanityCheck san = new ParaSimSanityCheck();
+				String method = args[1];
+				String indexDir = args[2];
+				String indexDirNoStops = args[3];
+				String topQrelsPath = args[4];
+				String artQrelsPath = args[5];
+				String parasimQrelsPath = args[6];
+				int keyNo = Integer.parseInt(args[7]);
+				san.checkWordnet(method, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
 			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();

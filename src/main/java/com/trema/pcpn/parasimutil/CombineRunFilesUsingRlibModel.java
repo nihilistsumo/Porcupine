@@ -1,4 +1,4 @@
-package com.trema.pcpn.parasim;
+package com.trema.pcpn.parasimutil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
