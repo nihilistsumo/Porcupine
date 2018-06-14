@@ -106,7 +106,8 @@ public class ParaSimSanityCheck {
 			HashMap<String, String> sampleRet = new HashMap<String, String>();
 			HashMap<String, String> sampleQrels = new HashMap<String, String>();
 			System.out.println(method+" started");
-			StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
+			//StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
+			for(String keyPara:qSoFar) {
 				try {
 					ArrayList<String> retParas = sample.get(keyPara);
 					String rel = retParas.get(0);
@@ -131,7 +132,7 @@ public class ParaSimSanityCheck {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			});
+			};
 			int correctCount = 0;
 			for(String q:sampleRet.keySet()) {
 				if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
@@ -146,7 +147,8 @@ public class ParaSimSanityCheck {
 			System.out.println(wnMethod+" started");
 			ILexicalDatabase db = new NictWordNet();
 			SimilarityCalculator sc = new SimilarityCalculator();
-			StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
+			//StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
+			for(String keyPara:qSoFar) {
 				try {
 					ArrayList<String> retParas = sample.get(keyPara);
 					String rel = retParas.get(0);
@@ -170,7 +172,7 @@ public class ParaSimSanityCheck {
 					e.printStackTrace();
 				}
 				System.out.print("Para "+keyPara+" done\r");
-			});
+			};
 			int correctCount = 0;
 			for(String q:sampleRet.keySet()) {
 				if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
