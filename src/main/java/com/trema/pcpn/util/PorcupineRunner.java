@@ -125,9 +125,18 @@ public class PorcupineRunner {
 				String indexDirNoStops = args[4];
 				String topQrelsPath = args[5];
 				String artQrelsPath = args[6];
-				String parasimQrelsPath = args[7];
-				int keyNo = Integer.parseInt(args[8]);
-				san.check(methods, wnMethods, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, parasimQrelsPath, keyNo);
+				int keyNo = Integer.parseInt(args[7]);
+				san.check(prop, methods, wnMethods, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, keyNo);
+			}
+			else if(args[0].equalsIgnoreCase("pw2v")) {
+				ParaW2VConverter pw2v = new ParaW2VConverter();
+				String paraFilePath = args[1];
+				String ip = args[2];
+				String db = args[3];
+				String table = args[4];
+				String user = args[5];
+				String pwd = args[6];
+				pw2v.convert(prop, paraFilePath, ip, db, table, user, pwd);
 			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();
