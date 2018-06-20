@@ -65,7 +65,7 @@ public class ParaW2VConverter {
 						Array vecArray = connect.createArrayOf("float8", vecObjArray);
 						preparedStatement.setArray(2, vecArray);
 						preparedStatement.executeUpdate();
-						System.out.println(paraID+" done");
+						//System.out.println(paraID+" done");
 				    }
 				} catch (IOException | ParseException | SQLException e) {
 					// TODO Auto-generated catch block

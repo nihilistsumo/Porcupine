@@ -66,6 +66,7 @@ public class ParaSimSanityCheck {
 		});
 		int correctCount1 = 0;
 		for(String q:sampleRet1.keySet()) {
+			//System.out.println("key = "+q+", ret = "+sampleRet1.get(q)+", rel = "+sampleQrels1.get(q));
 			if(sampleRet1.get(q).equalsIgnoreCase(sampleQrels1.get(q)))
 				correctCount1++;
 		}
@@ -89,13 +90,15 @@ public class ParaSimSanityCheck {
 				try {
 					ArrayList<String> retParas = sample.get(keyPara);
 					String rel = retParas.get(0);
+					Collections.shuffle(retParas);
 					sampleQrels.put(keyPara, rel);
 					QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
 					QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
 					String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
 					BooleanQuery.setMaxClauseCount(65536);
 					Query q = qp.parse(QueryParser.escape(queryString));
-					TopDocs tds = is.search(q, 100);
+					/*
+					TopDocs tds = is.search(q, 10000);
 					ScoreDoc[] retDocs = tds.scoreDocs;
 					for (int j = 0; j < retDocs.length; j++) {
 						Document d = is.doc(retDocs[j].doc);
@@ -105,6 +108,22 @@ public class ParaSimSanityCheck {
 							break;
 						}
 					}
+					*/
+					String topRet = "";
+					double topScore = 0;
+					for(String ret:retParas) {
+						int retDocID = isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc;
+						double currScore = is.explain(q, retDocID).getValue();
+						if(currScore>topScore) {
+							topRet = ret;
+							topScore = currScore;
+						}
+					}
+					if(topRet.equals("")) {
+						//System.out.println("rand");
+						topRet = retParas.get(rand.nextInt(retParas.size()));
+					}
+					sampleRet.put(keyPara, topRet);
 					//System.out.print("Para "+keyPara+" done\r");
 				} catch (IOException | ParseException e) {
 					// TODO Auto-generated catch block
@@ -113,6 +132,7 @@ public class ParaSimSanityCheck {
 			});
 			int correctCount = 0;
 			for(String q:sampleRet.keySet()) {
+				//System.out.println("key = "+q+", ret = "+sampleRet.get(q)+", rel = "+sampleQrels.get(q));
 				if(sampleRet.get(q).equalsIgnoreCase(sampleQrels.get(q)))
 					correctCount++;
 			}
@@ -145,6 +165,8 @@ public class ParaSimSanityCheck {
 							topScore = currScore;
 						}
 					}
+					if(topRet.equals(""))
+						topRet = retParas.get(rand.nextInt(retParas.size()));
 					sampleRet.put(keyPara, topRet);
 				} catch (IOException | ParseException e) {
 					// TODO Auto-generated catch block
