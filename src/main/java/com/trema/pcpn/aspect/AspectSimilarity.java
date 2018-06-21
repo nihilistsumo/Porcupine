@@ -23,7 +23,7 @@ public class AspectSimilarity {
 			System.out.println("Starting...");
 			int j=0;
 			while(line!=null) {
-				String[] elements = line.split("\\s+");
+				String[] elements = line.split("\t");
 				if(elements.length>1) {
 					String paraID = elements[0];
 					PreparedStatement preparedStatement = con.prepareStatement("select * from paraent where paraid = ?");
