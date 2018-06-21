@@ -20,6 +20,8 @@ public class AspectSimilarity {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(new File(paraEntitiesFile)));
 			String line = br.readLine();
+			System.out.println("Starting...");
+			int j=0;
 			while(line!=null) {
 				String[] elements = line.split(" ");
 				if(elements.length>1) {
@@ -39,13 +41,18 @@ public class AspectSimilarity {
 							preparedStatement.executeUpdate();
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
-							System.out.println("tried to process: "+line);
+							System.out.println("\ntried to process: "+line);
 							e.printStackTrace();
 						}
 					}
 				}
+				j++;
+				if (j % 10000 == 0) {
+	                System.out.print('.');
+	            }
 				line = br.readLine();
 			}
+			System.out.println("\nDone");
 			br.close();
 		} catch (IOException | SQLException e) {
 			// TODO Auto-generated catch block
