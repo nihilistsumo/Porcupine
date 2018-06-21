@@ -35,7 +35,13 @@ public class AspectSimilarity {
 						preparedStatement = con.prepareStatement("insert into paraent values (?,?)");
 						preparedStatement.setString(1, paraID);
 						preparedStatement.setString(2, entString);
-						preparedStatement.executeUpdate();
+						try {
+							preparedStatement.executeUpdate();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							System.out.println("tried to process: "+line);
+							e.printStackTrace();
+						}
 					}
 				}
 				line = br.readLine();
