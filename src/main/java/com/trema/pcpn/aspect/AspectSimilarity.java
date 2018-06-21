@@ -23,17 +23,14 @@ public class AspectSimilarity {
 			System.out.println("Starting...");
 			int j=0;
 			while(line!=null) {
-				String[] elements = line.split(" ");
+				String[] elements = line.split("\\s+");
 				if(elements.length>1) {
 					String paraID = elements[0];
 					PreparedStatement preparedStatement = con.prepareStatement("select * from paraent where paraid = ?");
 					preparedStatement.setString(1, paraID);
 					ResultSet resultSet = preparedStatement.executeQuery();
 					if(!resultSet.next()) {
-						String entString = "";
-						for(int i=1; i<elements.length; i++) {
-							entString+=elements[i];
-						}
+						String entString = elements[1];
 						preparedStatement = con.prepareStatement("insert into paraent values (?,?)");
 						preparedStatement.setString(1, paraID);
 						preparedStatement.setString(2, entString);
