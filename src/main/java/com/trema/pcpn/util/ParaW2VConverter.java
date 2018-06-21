@@ -31,9 +31,7 @@ public class ParaW2VConverter {
 	
 	public void convert(Properties prop, String parafilePath, String ip, String db, String table, String dbUser, String dbPwd) {
 		try {
-			Class.forName("org.postgresql.Driver");
-			// DriverManager.getConnection("jdbc:postgresql://localhost:5432/testdb", "postgres", "123");
-			Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ip+"/"+db, dbUser, dbPwd);
+			Connection connect = DataUtilities.getDBConnection(ip, db, table, dbUser, dbPwd);
 			Statement statement = connect.createStatement();
 			
 			FileInputStream fis = new FileInputStream(new File(parafilePath));
@@ -72,6 +70,7 @@ public class ParaW2VConverter {
 					e.printStackTrace();
 				}
 			});
+			connect.close();
 		} catch (CborRuntimeException | CborFileTypeException | IOException | ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

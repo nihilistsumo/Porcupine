@@ -7,6 +7,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -93,6 +96,13 @@ public class DataUtilities {
 		paraVec = getAvgParaVec(tokenTfidfMap, tokenVecMap, vecSize);
 		//p++;
 		return paraVec;
+	}
+	
+	public static Connection getDBConnection(String ip, String db, String table, String dbUser, String dbPwd) throws ClassNotFoundException, SQLException {
+		Class.forName("org.postgresql.Driver");
+		// DriverManager.getConnection("jdbc:postgresql://localhost:5432/testdb", "postgres", "123");
+		Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ip+"/"+db, dbUser, dbPwd);
+		return connect;
 	}
 	
 	public static HashMap<String, double[]> getSecVecMap(Properties pr, ArrayList<String> secids, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{

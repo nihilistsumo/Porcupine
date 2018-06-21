@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import com.trema.pcpn.aspect.AspectSimilarity;
 import com.trema.pcpn.parasimutil.CombineRunFilesToRLibFetFile;
 import com.trema.pcpn.parasimutil.CombineRunFilesUsingRlibModel;
 import com.trema.pcpn.parasimutil.ParasimFetFileWriter;
@@ -137,6 +138,19 @@ public class PorcupineRunner {
 				String user = args[5];
 				String pwd = args[6];
 				pw2v.convert(prop, paraFilePath, ip, db, table, user, pwd);
+			}
+			else if(args[0].equalsIgnoreCase("asp")) {
+				AspectSimilarity asp = new AspectSimilarity();
+				String option = args[1];
+				String ip = args[2];
+				String db = args[3];
+				String table = args[4];
+				String user = args[5];
+				String pwd = args[6];
+				String paraEntFile = args[7];
+				if(option.equalsIgnoreCase("d")) {
+					asp.insertEntitiesInDB(paraEntFile, DataUtilities.getDBConnection(ip, db, table, user, pwd));
+				}
 			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();
