@@ -110,9 +110,16 @@ public class ParaSimSanityCheck {
 		String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
 		BooleanQuery.setMaxClauseCount(65536);
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
+		//TopDocs tdsKeypara = aspectIs.search(q, 100);
+		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, 100).scoreDocs;
 		for(String ret:retParas) {
-			int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
-			double currScore = aspectIs.explain(q, retDocID).getValue();
+			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
+			//double currScore = aspectIs.explain(q, retDocID).getValue();
+			queryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
+			BooleanQuery.setMaxClauseCount(65536);
+			q = qpAspText.parse(QueryParser.escape(queryString));
+			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, 100).scoreDocs;
+			double currScore = this.calculateAspectSimilarity(retAspectsKeyPara, retAspectsRetPara);
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
@@ -123,6 +130,17 @@ public class ParaSimSanityCheck {
 			topRet = retParas.get(rand.nextInt(retParas.size()));
 		}
 		return topRet;
+	}
+	
+	private double calculateAspectSimilarity(ScoreDoc[] keyAspects, ScoreDoc[] retAspects) {
+		int match = 0;
+		for(ScoreDoc d:keyAspects) {
+			for(ScoreDoc retD:retAspects) {
+				if(d.doc==retD.doc)
+					match++;
+			}
+		}
+		return (double)match/keyAspects.length;
 	}
 	
 	// methods to be tried are separated by :
