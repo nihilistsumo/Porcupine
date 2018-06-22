@@ -166,8 +166,8 @@ public class ParaSimSanityCheck {
 			HashMap<String, String> sampleRet1 = new HashMap<String, String>();
 			HashMap<String, String> sampleQrels1 = new HashMap<String, String>();
 			System.out.println(method+" started");
-			//StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
-			for(String keyPara:qSoFar) {
+			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			//for(String keyPara:qSoFar) {
 				ArrayList<String> retParas = sample.get(keyPara);
 				String rel = retParas.get(0);
 				sampleQrels1.put(keyPara, rel);
@@ -220,7 +220,7 @@ public class ParaSimSanityCheck {
 				}
 				//else if(method.equals("bm25"))
 				//System.out.print("Para "+keyPara+" done\r");
-			}
+			});
 			int correctCount1 = 0;
 			for(String q:sampleRet1.keySet()) {
 				//System.out.println("key = "+q+", ret = "+sampleRet1.get(q)+", rel = "+sampleQrels1.get(q));
