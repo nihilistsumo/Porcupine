@@ -33,14 +33,105 @@ import edu.cmu.lti.lexical_db.NictWordNet;
 
 public class ParaSimSanityCheck {
 	
+	public String retrieveParaRandom(ArrayList<String> retParas) {
+		Random rand = new Random();
+		return retParas.get(rand.nextInt(retParas.size()));
+	}
+	
+	public String retrieveParaLucene(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops) throws IOException, ParseException {
+		Random rand = new Random();
+		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+		QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
+		String topRet = "";
+		String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+		BooleanQuery.setMaxClauseCount(65536);
+		Query q = qp.parse(QueryParser.escape(queryString));
+		double topScore = 0;
+		for(String ret:retParas) {
+			int retDocID = isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc;
+			double currScore = is.explain(q, retDocID).getValue();
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
+	public String retrieveParaWordnet(String keyPara, ArrayList<String> retParas, String wnMethod, ILexicalDatabase db, IndexSearcher isNoStops, SimilarityCalculator sc) throws IOException, ParseException {
+		Random rand = new Random();
+		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+		String topRet = "";
+		double topScore = 0;
+		for(String ret:retParas) {
+			String p1text = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+			String p2text = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
+			double currScore = sc.calculateWordnetSimilarity(db, p1text, p2text, wnMethod);
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
+	public String retrieveParaW2V(String keyPara, ArrayList<String> retParas, HashMap<String, double[]> gloveVecs, int vecSize, Properties prop) throws IOException, ParseException {
+		Random rand = new Random();
+		String topRet = "";
+		double topScore = 0;
+		for(String ret:retParas) {
+			double currScore = DataUtilities.getDotProduct(DataUtilities.getParaW2VVec(prop, keyPara, gloveVecs, vecSize), DataUtilities.getParaW2VVec(prop, ret, gloveVecs, vecSize));
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
+	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs) throws IOException, ParseException {
+		Random rand = new Random();
+		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
+		String topRet = "";
+		double topScore = 0;
+		String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+		BooleanQuery.setMaxClauseCount(65536);
+		Query q = qpAspText.parse(QueryParser.escape(queryString));
+		for(String ret:retParas) {
+			int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
+			double currScore = aspectIs.explain(q, retDocID).getValue();
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
 	// methods to be tried are separated by :
-	public void check(Properties prop, String methods, String wnMethods, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo) throws IOException, ParseException {
+	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo) throws IOException, ParseException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
+		IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirAspPath).toPath()))));
 		SubsampleForRlib sampler = new SubsampleForRlib();
 		HashMap<String, ArrayList<String>> sample = sampler.subSample(topQrelsPath, artQrelsPath);
-		
-		
 		ArrayList<String> qparaset = new ArrayList<String>(sample.keySet());
 		ArrayList<String> qSoFar = new ArrayList<String>();
 		Random rand = new Random();
@@ -51,7 +142,78 @@ public class ParaSimSanityCheck {
 				keyPara = qparaset.get(rand.nextInt(qparaset.size()));
 			qSoFar.add(keyPara);
 		}
+		ILexicalDatabase db = new NictWordNet();
+		// loop code
+		for(String method:methods.split(":")) {
+			HashMap<String, String> sampleRet1 = new HashMap<String, String>();
+			HashMap<String, String> sampleQrels1 = new HashMap<String, String>();
+			System.out.println(method+" started");
+			//StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			for(String keyPara:qSoFar) {
+				ArrayList<String> retParas = sample.get(keyPara);
+				String rel = retParas.get(0);
+				sampleQrels1.put(keyPara, rel);
+				Collections.shuffle(retParas);
+				try {
+					if(method.equals("rand"))
+						sampleRet1.put(keyPara, this.retrieveParaRandom(retParas));
+					else if(method.equals("bm25")) {
+						is.setSimilarity(new BM25Similarity());
+						sampleRet1.put(keyPara, this.retrieveParaLucene(keyPara, retParas, is, isNoStops));
+					}
+					else if(method.equals("bool")) {
+						is.setSimilarity(new BooleanSimilarity());
+						sampleRet1.put(keyPara, this.retrieveParaLucene(keyPara, retParas, is, isNoStops));
+					}
+					else if(method.equals("classic")) {
+						is.setSimilarity(new ClassicSimilarity());
+						sampleRet1.put(keyPara, this.retrieveParaLucene(keyPara, retParas, is, isNoStops));
+					}
+					else if(method.equals("lmds")) {
+						is.setSimilarity(new LMDirichletSimilarity());
+						sampleRet1.put(keyPara, this.retrieveParaLucene(keyPara, retParas, is, isNoStops));
+					}
+					else if(method.equals("wnji")) {
+						SimilarityCalculator sc = new SimilarityCalculator();
+						sampleRet1.put(keyPara, this.retrieveParaWordnet(keyPara, retParas, "ji", db, isNoStops, sc));
+					}
+					else if(method.equals("wnpat")) {
+						SimilarityCalculator sc = new SimilarityCalculator();
+						sampleRet1.put(keyPara, this.retrieveParaWordnet(keyPara, retParas, "pat", db, isNoStops, sc));
+					}
+					else if(method.equals("wnwu")) {
+						SimilarityCalculator sc = new SimilarityCalculator();
+						sampleRet1.put(keyPara, this.retrieveParaWordnet(keyPara, retParas, "wu", db, isNoStops, sc));
+					}
+					else if(method.equals("wnlin")) {
+						SimilarityCalculator sc = new SimilarityCalculator();
+						sampleRet1.put(keyPara, this.retrieveParaWordnet(keyPara, retParas, "lin", db, isNoStops, sc));
+					}
+					else if(method.equals("w2v")) {
+						HashMap<String, double[]> gloveVecs = DataUtilities.readGloveFile(prop);
+						sampleRet1.put(keyPara, this.retrieveParaW2V(keyPara, retParas, gloveVecs, gloveVecs.get("the").length, prop));
+					}
+					else if(method.equals("asp")) {
+						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs));
+					}
+				} catch (IOException | ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//else if(method.equals("bm25"))
+				//System.out.print("Para "+keyPara+" done\r");
+			}
+			int correctCount1 = 0;
+			for(String q:sampleRet1.keySet()) {
+				//System.out.println("key = "+q+", ret = "+sampleRet1.get(q)+", rel = "+sampleQrels1.get(q));
+				if(sampleRet1.get(q).equalsIgnoreCase(sampleQrels1.get(q)))
+					correctCount1++;
+			}
+			System.out.println("\n"+method+" Precision@1 = "+(double)correctCount1/sampleQrels1.size());
+		}
 		
+		
+		/*
 		// Random code
 		System.out.println("Random baseline started");
 		HashMap<String, String> sampleRet1 = new HashMap<String, String>();
@@ -71,6 +233,24 @@ public class ParaSimSanityCheck {
 				correctCount1++;
 		}
 		System.out.println("Random baseline Precision@1 = "+(double)correctCount1/sampleQrels1.size());
+		
+		// Aspect code
+		System.out.println("Aspect method started");
+		HashMap<String, String> sampleRet = new HashMap<String, String>();
+		HashMap<String, String> sampleQrels = new HashMap<String, String>();
+		StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			try {
+				ArrayList<String> retParas = sample.get(keyPara);
+				String rel = retParas.get(0);
+				Collections.shuffle(retParas);
+				sampleQrels.put(keyPara, rel);
+				
+			} catch (IOException | ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+		
 		
 		
 		// Lucene sim code
@@ -97,7 +277,7 @@ public class ParaSimSanityCheck {
 					String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
 					BooleanQuery.setMaxClauseCount(65536);
 					Query q = qp.parse(QueryParser.escape(queryString));
-					/*
+					
 					TopDocs tds = is.search(q, 10000);
 					ScoreDoc[] retDocs = tds.scoreDocs;
 					for (int j = 0; j < retDocs.length; j++) {
@@ -108,7 +288,7 @@ public class ParaSimSanityCheck {
 							break;
 						}
 					}
-					*/
+					
 					String topRet = "";
 					double topScore = 0;
 					for(String ret:retParas) {
@@ -216,6 +396,7 @@ public class ParaSimSanityCheck {
 				correctCount++;
 		}
 		System.out.println("w2v Precision@1 = "+(double)correctCount/sampleQrels.size());
+		*/
 	}
 
 }

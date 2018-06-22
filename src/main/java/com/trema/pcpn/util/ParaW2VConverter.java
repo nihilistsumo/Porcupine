@@ -52,18 +52,11 @@ public class ParaW2VConverter {
 						Object[] vecObjArray = new Object[vec.length];
 						for(int j=0; j<vec.length; j++)
 							vecObjArray[j] = vec[j];
-						//ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					    //ObjectOutputStream oos = new ObjectOutputStream(baos);
-					    //oos.writeObject(vec);
-						//byte[] vecBytes = baos.toByteArray();
 						preparedStatement = connect.prepareStatement("insert into wordvecs values (?,?)");
 						preparedStatement.setString(1, paraID);
-						//ByteArrayInputStream bais = new ByteArrayInputStream(vecBytes);
-						//preparedStatement.setBinaryStream(2, bais);
 						Array vecArray = connect.createArrayOf("float8", vecObjArray);
 						preparedStatement.setArray(2, vecArray);
 						preparedStatement.executeUpdate();
-						//System.out.println(paraID+" done");
 				    }
 				} catch (IOException | ParseException | SQLException e) {
 					// TODO Auto-generated catch block

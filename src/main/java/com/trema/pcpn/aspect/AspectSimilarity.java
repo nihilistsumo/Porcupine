@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.trema.pcpn.util.DataUtilities;
 
@@ -57,9 +59,28 @@ public class AspectSimilarity {
 		}
 	}
 	
-	public ArrayList<String> findCommonEntities(String paraID1, String paraID2) {
+	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con) {
 		ArrayList<String> commonEntities = new ArrayList<String>();
-		
+		try {
+			PreparedStatement preparedStatement = con.prepareStatement("select ent from wordvecs where paraid = ?");
+			preparedStatement.setString(1, paraID1);
+			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet.next();
+			String ent1 = resultSet.getString(1);
+			preparedStatement.setString(1, paraID2);
+			resultSet = preparedStatement.executeQuery();
+			resultSet.next();
+			String ent2 = resultSet.getString(1);
+			List<String> entList1 = Arrays.asList(ent1.split(" "));
+			List<String> entList2 = Arrays.asList(ent2.split(" "));
+			for(String e:entList1) {
+				if(entList2.contains(e))
+					commonEntities.add(e);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return commonEntities;
 	}
 

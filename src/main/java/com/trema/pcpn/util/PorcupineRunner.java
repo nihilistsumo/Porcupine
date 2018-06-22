@@ -121,13 +121,13 @@ public class PorcupineRunner {
 			else if(args[0].equalsIgnoreCase("san")) {
 				ParaSimSanityCheck san = new ParaSimSanityCheck();
 				String methods = args[1];
-				String wnMethods = args[2];
+				String indexDirAsp = args[2];
 				String indexDir = args[3];
 				String indexDirNoStops = args[4];
 				String topQrelsPath = args[5];
 				String artQrelsPath = args[6];
 				int keyNo = Integer.parseInt(args[7]);
-				san.check(prop, methods, wnMethods, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, keyNo);
+				san.check(prop, methods, indexDirAsp, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, keyNo);
 			}
 			else if(args[0].equalsIgnoreCase("pw2v")) {
 				ParaW2VConverter pw2v = new ParaW2VConverter();
