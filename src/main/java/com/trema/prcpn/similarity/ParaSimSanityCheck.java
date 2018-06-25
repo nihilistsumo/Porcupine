@@ -101,7 +101,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs) throws IOException, ParseException {
+	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs, int retAspNo, String printAspects) throws IOException, ParseException {
 		Random rand = new Random();
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
 		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
@@ -112,13 +112,17 @@ public class ParaSimSanityCheck {
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
 		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, 100).scoreDocs;
+		if(printAspects.equalsIgnoreCase("print"))
+			this.printAspects(retAspectsKeyPara, aspectIs);
 		for(String ret:retParas) {
 			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
 			//double currScore = aspectIs.explain(q, retDocID).getValue();
 			queryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
 			BooleanQuery.setMaxClauseCount(65536);
 			q = qpAspText.parse(QueryParser.escape(queryString));
-			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, 100).scoreDocs;
+			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
+			if(printAspects.equalsIgnoreCase("print"))
+				this.printAspects(retAspectsRetPara, aspectIs);
 			double currScore = this.calculateAspectSimilarity(retAspectsKeyPara, retAspectsRetPara);
 			if(currScore>topScore) {
 				topRet = ret;
@@ -143,8 +147,30 @@ public class ParaSimSanityCheck {
 		return (double)match/keyAspects.length;
 	}
 	
+	private void printAspects(ScoreDoc[] aspects, IndexSearcher aspectIs) {
+		int rank = 1;
+		System.out.println("Retrieved aspects");
+		System.out.println("-----------------\n");
+		for(ScoreDoc asp:aspects) {
+			try {
+				Document aspDoc = aspectIs.doc(asp.doc);
+				String heading = aspDoc.getField("Headings").stringValue();
+				String id = aspDoc.getField("Id").stringValue();
+				String leadText = aspDoc.getField("LeadText").stringValue();
+				String text = aspDoc.getField("Text").stringValue();
+				String title = aspDoc.getField("Title").stringValue();
+				
+				System.out.println(rank+". ID: "+id+"\nHeading: "+heading+"\nTitle: "+title+"\nLead Text: "+leadText+"\n\nText: "+text+"\n");
+				rank++;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	// methods to be tried are separated by :
-	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo) throws IOException, ParseException {
+	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo, int retAspNo, String print) throws IOException, ParseException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
 		IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirAspPath).toPath()))));
@@ -166,7 +192,7 @@ public class ParaSimSanityCheck {
 			HashMap<String, String> sampleRet1 = new HashMap<String, String>();
 			HashMap<String, String> sampleQrels1 = new HashMap<String, String>();
 			System.out.println(method+" started");
-			StreamSupport.stream(qSoFar.spliterator(), true).forEach(keyPara -> {
+			StreamSupport.stream(qSoFar.spliterator(), false).forEach(keyPara -> {
 			//for(String keyPara:qSoFar) {
 				ArrayList<String> retParas = sample.get(keyPara);
 				String rel = retParas.get(0);
@@ -212,7 +238,7 @@ public class ParaSimSanityCheck {
 						sampleRet1.put(keyPara, this.retrieveParaW2V(keyPara, retParas, gloveVecs, gloveVecs.get("the").length, prop));
 					}
 					else if(method.equals("asp")) {
-						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs));
+						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs, retAspNo, print));
 					}
 				} catch (IOException | ParseException e) {
 					// TODO Auto-generated catch block

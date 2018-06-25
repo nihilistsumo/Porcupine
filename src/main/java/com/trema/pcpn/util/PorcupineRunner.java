@@ -127,7 +127,9 @@ public class PorcupineRunner {
 				String topQrelsPath = args[5];
 				String artQrelsPath = args[6];
 				int keyNo = Integer.parseInt(args[7]);
-				san.check(prop, methods, indexDirAsp, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, keyNo);
+				int retAspNo = Integer.parseInt(args[8]);
+				String print = args[9];
+				san.check(prop, methods, indexDirAsp, indexDir, indexDirNoStops, topQrelsPath, artQrelsPath, keyNo, retAspNo, print);
 			}
 			else if(args[0].equalsIgnoreCase("pw2v")) {
 				ParaW2VConverter pw2v = new ParaW2VConverter();
