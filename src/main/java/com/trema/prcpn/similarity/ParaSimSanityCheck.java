@@ -115,7 +115,7 @@ public class ParaSimSanityCheck {
 		BooleanQuery.setMaxClauseCount(65536);
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
-		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, 100).scoreDocs;
+		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, retAspNo).scoreDocs;
 		if(printAspects.equalsIgnoreCase("print")) {
 			System.out.println("Aspects of key "+keyPara);
 			System.out.println("--------------\n");
