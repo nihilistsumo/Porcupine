@@ -108,6 +108,10 @@ public class ParaSimSanityCheck {
 		String topRet = "";
 		double topScore = 0;
 		String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+		if(printAspects.equalsIgnoreCase("print")) {
+			System.out.println("Keypara: "+keyPara);
+			System.out.println("Query String: "+queryString+"\n");
+		}
 		BooleanQuery.setMaxClauseCount(65536);
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
