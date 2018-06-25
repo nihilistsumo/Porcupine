@@ -101,7 +101,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs, int retAspNo, String printAspects) throws IOException, ParseException {
+	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException {
 		Random rand = new Random();
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
 		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
@@ -116,8 +116,11 @@ public class ParaSimSanityCheck {
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
 		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, 100).scoreDocs;
-		if(printAspects.equalsIgnoreCase("print"))
-			this.printAspects(retAspectsKeyPara, aspectIs);
+		if(printAspects.equalsIgnoreCase("print")) {
+			System.out.println("Aspects of key");
+			System.out.println("--------------\n");
+			this.printAspects(keyPara, retAspectsKeyPara, aspectIs, false);
+		}
 		for(String ret:retParas) {
 			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
 			//double currScore = aspectIs.explain(q, retDocID).getValue();
@@ -125,9 +128,13 @@ public class ParaSimSanityCheck {
 			BooleanQuery.setMaxClauseCount(65536);
 			q = qpAspText.parse(QueryParser.escape(queryString));
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
-			if(printAspects.equalsIgnoreCase("print"))
-				this.printAspects(retAspectsRetPara, aspectIs);
+			
 			double currScore = this.calculateAspectSimilarity(retAspectsKeyPara, retAspectsRetPara);
+			if(printAspects.equalsIgnoreCase("print")) {
+				System.out.println("Aspect similrity score with keypara = "+currScore);
+				this.printAspects(ret, retAspectsRetPara, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
+				System.out.println("\n\n");
+			}
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
@@ -151,9 +158,11 @@ public class ParaSimSanityCheck {
 		return (double)match/keyAspects.length;
 	}
 	
-	private void printAspects(ScoreDoc[] aspects, IndexSearcher aspectIs) {
+	private void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, boolean isRel) {
 		int rank = 1;
-		System.out.println("Retrieved aspects");
+		System.out.println("Retrieved aspects for para "+paraID);
+		if(isRel)
+			System.out.println("This is relevant");
 		System.out.println("-----------------\n");
 		for(ScoreDoc asp:aspects) {
 			try {
@@ -242,7 +251,7 @@ public class ParaSimSanityCheck {
 						sampleRet1.put(keyPara, this.retrieveParaW2V(keyPara, retParas, gloveVecs, gloveVecs.get("the").length, prop));
 					}
 					else if(method.equals("asp")) {
-						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs, retAspNo, print));
+						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs, sampleQrels1, retAspNo, print));
 					}
 				} catch (IOException | ParseException e) {
 					// TODO Auto-generated catch block
