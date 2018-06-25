@@ -117,7 +117,7 @@ public class ParaSimSanityCheck {
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
 		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, 100).scoreDocs;
 		if(printAspects.equalsIgnoreCase("print")) {
-			System.out.println("Aspects of key");
+			System.out.println("Aspects of key "+keyPara);
 			System.out.println("--------------\n");
 			this.printAspects(keyPara, retAspectsKeyPara, aspectIs, false);
 		}
@@ -131,6 +131,7 @@ public class ParaSimSanityCheck {
 			
 			double currScore = this.calculateAspectSimilarity(retAspectsKeyPara, retAspectsRetPara);
 			if(printAspects.equalsIgnoreCase("print")) {
+				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
 				this.printAspects(ret, retAspectsRetPara, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
 				System.out.println("\n\n");
@@ -160,7 +161,7 @@ public class ParaSimSanityCheck {
 	
 	private void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, boolean isRel) {
 		int rank = 1;
-		System.out.println("Retrieved aspects for para "+paraID);
+		System.out.println("Retrieved aspects");
 		if(isRel)
 			System.out.println("This is relevant");
 		System.out.println("-----------------\n");
