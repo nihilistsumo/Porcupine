@@ -190,13 +190,14 @@ public class ParaSimSanityCheck {
 		for(ScoreDoc asp:aspects) {
 			try {
 				Document aspDoc = aspectIs.doc(asp.doc);
-				String heading = aspDoc.getField("Headings").stringValue();
+				//String heading = aspDoc.getField("Headings").stringValue();
 				String id = aspDoc.getField("Id").stringValue();
-				String leadText = aspDoc.getField("LeadText").stringValue();
+				//String leadText = aspDoc.getField("LeadText").stringValue();
 				String text = aspDoc.getField("Text").stringValue();
-				String title = aspDoc.getField("Title").stringValue();
+				//String title = aspDoc.getField("Title").stringValue();
 				
-				System.out.println(rank+". ID: "+id+"\nHeading: "+heading+"\nTitle: "+title+"\nLead Text: "+leadText+"\n\nText: "+text+"\n");
+				//System.out.println(rank+". ID: "+id+"\nHeading: "+heading+"\nTitle: "+title+"\nLead Text: "+leadText+"\n\nText: "+text+"\n");
+				System.out.println(rank+". Aspect ID: "+id+"\n\nText: "+text+"\n");
 				rank++;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
