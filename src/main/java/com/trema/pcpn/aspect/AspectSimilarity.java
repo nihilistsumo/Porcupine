@@ -65,14 +65,24 @@ public class AspectSimilarity {
 			PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
 			preparedStatement.setString(1, paraID1);
 			ResultSet resultSet = preparedStatement.executeQuery();
-			resultSet.next();
+			if(!resultSet.next()) {
+				if(print.equalsIgnoreCase("print"))
+					System.out.println("No entities linked in Keypara "+paraID1);
+				return commonEntities;
+			}
 			String ent1 = resultSet.getString(1);
-			preparedStatement.setString(1, paraID2);
-			resultSet = preparedStatement.executeQuery();
-			resultSet.next();
-			String ent2 = resultSet.getString(1);
 			if(print.equalsIgnoreCase("print")) {
 				System.out.println("\nKeypara "+paraID1+" entities: "+ent1);
+			}
+			preparedStatement.setString(1, paraID2);
+			resultSet = preparedStatement.executeQuery();
+			if(!resultSet.next()) {
+				if(print.equalsIgnoreCase("print"))
+					System.out.println("No entities linked in ret para "+paraID2);
+				return commonEntities;
+			}
+			String ent2 = resultSet.getString(1);
+			if(print.equalsIgnoreCase("print")) {
 				System.out.println("Ret para "+paraID2+" entities: "+ent2);
 			}
 			List<String> entList1 = Arrays.asList(ent1.split(" "));
