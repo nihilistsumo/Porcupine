@@ -62,7 +62,7 @@ public class AspectSimilarity {
 	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con) {
 		ArrayList<String> commonEntities = new ArrayList<String>();
 		try {
-			PreparedStatement preparedStatement = con.prepareStatement("select ent from wordvecs where paraid = ?");
+			PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
 			preparedStatement.setString(1, paraID1);
 			ResultSet resultSet = preparedStatement.executeQuery();
 			resultSet.next();

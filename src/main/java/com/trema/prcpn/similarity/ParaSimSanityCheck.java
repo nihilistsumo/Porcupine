@@ -2,6 +2,8 @@ package com.trema.prcpn.similarity;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +27,7 @@ import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 
+import com.trema.pcpn.aspect.AspectSimilarity;
 import com.trema.pcpn.parasimutil.SubsampleForRlib;
 import com.trema.pcpn.util.DataUtilities;
 
@@ -89,6 +92,25 @@ public class ParaSimSanityCheck {
 		double topScore = 0;
 		for(String ret:retParas) {
 			double currScore = DataUtilities.getDotProduct(DataUtilities.getParaW2VVec(prop, keyPara, gloveVecs, vecSize), DataUtilities.getParaW2VVec(prop, ret, gloveVecs, vecSize));
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
+	public String retrieveParaEntity(String keyPara, ArrayList<String> retParas, Connection con, HashMap<String, String> qrels, String printEntities) {
+		Random rand = new Random();
+		AspectSimilarity aspSim = new AspectSimilarity();
+		String topRet = "";
+		int topScore = 0;
+		for(String ret:retParas) {
+			int currScore = aspSim.findCommonEntities(keyPara, ret, con).size();
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
@@ -184,7 +206,7 @@ public class ParaSimSanityCheck {
 	}
 	
 	// methods to be tried are separated by :
-	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo, int retAspNo, String print) throws IOException, ParseException {
+	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo, int retAspNo, String print) throws IOException, ParseException, ClassNotFoundException, SQLException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
 		IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirAspPath).toPath()))));
@@ -201,6 +223,7 @@ public class ParaSimSanityCheck {
 			qSoFar.add(keyPara);
 		}
 		ILexicalDatabase db = new NictWordNet();
+		Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 		// loop code
 		for(String method:methods.split(":")) {
 			HashMap<String, String> sampleRet1 = new HashMap<String, String>();
@@ -253,6 +276,9 @@ public class ParaSimSanityCheck {
 					}
 					else if(method.equals("asp")) {
 						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs, sampleQrels1, retAspNo, print));
+					}
+					else if(method.equals("ent")) {
+						sampleRet1.put(keyPara, this.retrieveParaEntity(keyPara, retParas, con, sampleQrels1, print));
 					}
 				} catch (IOException | ParseException e) {
 					// TODO Auto-generated catch block
