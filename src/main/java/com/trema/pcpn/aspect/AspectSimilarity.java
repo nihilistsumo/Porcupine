@@ -59,7 +59,7 @@ public class AspectSimilarity {
 		}
 	}
 	
-	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con) {
+	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con, String print) {
 		ArrayList<String> commonEntities = new ArrayList<String>();
 		try {
 			PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
@@ -71,6 +71,10 @@ public class AspectSimilarity {
 			resultSet = preparedStatement.executeQuery();
 			resultSet.next();
 			String ent2 = resultSet.getString(1);
+			if(print.equalsIgnoreCase("print")) {
+				System.out.println("\nKeypara "+paraID1+" entities: "+ent1);
+				System.out.println("Ret para "+paraID2+" entities: "+ent2);
+			}
 			List<String> entList1 = Arrays.asList(ent1.split(" "));
 			List<String> entList2 = Arrays.asList(ent2.split(" "));
 			for(String e:entList1) {

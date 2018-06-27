@@ -110,7 +110,7 @@ public class ParaSimSanityCheck {
 		String topRet = "";
 		int topScore = 0;
 		for(String ret:retParas) {
-			int currScore = aspSim.findCommonEntities(keyPara, ret, con).size();
+			int currScore = aspSim.findCommonEntities(keyPara, ret, con, printEntities).size();
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
