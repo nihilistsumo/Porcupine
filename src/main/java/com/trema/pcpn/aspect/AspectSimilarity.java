@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.lucene.search.ScoreDoc;
+
 import com.trema.pcpn.util.DataUtilities;
 
 public class AspectSimilarity {
@@ -57,6 +59,17 @@ public class AspectSimilarity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public double aspectMatchRatio(ScoreDoc[] keyAspects, ScoreDoc[] retAspects) {
+		int match = 0;
+		for(ScoreDoc d:keyAspects) {
+			for(ScoreDoc retD:retAspects) {
+				if(d.doc==retD.doc)
+					match++;
+			}
+		}
+		return (double)match/keyAspects.length;
 	}
 	
 	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con, String print) {

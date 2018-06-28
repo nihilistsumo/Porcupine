@@ -143,6 +143,7 @@ public class ParaSimSanityCheck {
 			System.out.println("--------------\n");
 			this.printAspects(keyPara, retAspectsKeyPara, aspectIs, false);
 		}
+		AspectSimilarity aspSim = new AspectSimilarity();
 		for(String ret:retParas) {
 			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
 			//double currScore = aspectIs.explain(q, retDocID).getValue();
@@ -151,7 +152,7 @@ public class ParaSimSanityCheck {
 			q = qpAspText.parse(QueryParser.escape(queryString));
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
 			
-			double currScore = this.calculateAspectSimilarity(retAspectsKeyPara, retAspectsRetPara);
+			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
@@ -170,17 +171,6 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	private double calculateAspectSimilarity(ScoreDoc[] keyAspects, ScoreDoc[] retAspects) {
-		int match = 0;
-		for(ScoreDoc d:keyAspects) {
-			for(ScoreDoc retD:retAspects) {
-				if(d.doc==retD.doc)
-					match++;
-			}
-		}
-		return (double)match/keyAspects.length;
-	}
-	
 	private void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, boolean isRel) {
 		int rank = 1;
 		System.out.println("Retrieved aspects");
@@ -193,11 +183,11 @@ public class ParaSimSanityCheck {
 				//String heading = aspDoc.getField("Headings").stringValue();
 				String id = aspDoc.getField("Id").stringValue();
 				//String leadText = aspDoc.getField("LeadText").stringValue();
-				String text = aspDoc.getField("Text").stringValue();
+				//String text = aspDoc.getField("Text").stringValue();
 				//String title = aspDoc.getField("Title").stringValue();
 				
 				//System.out.println(rank+". ID: "+id+"\nHeading: "+heading+"\nTitle: "+title+"\nLead Text: "+leadText+"\n\nText: "+text+"\n");
-				System.out.println(rank+". Aspect ID: "+id+"\n\nText: "+text+"\n");
+				System.out.println(rank+". Aspect ID: "+id);
 				rank++;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
