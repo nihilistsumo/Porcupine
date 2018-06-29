@@ -108,7 +108,7 @@ public class AspectSimilarity {
 				}
 			}
 		}
-		System.out.println("Entites: "+ent);
+		//System.out.println("Entites: "+ent);
 		return ent.trim().split(" ");
 	}
 	
