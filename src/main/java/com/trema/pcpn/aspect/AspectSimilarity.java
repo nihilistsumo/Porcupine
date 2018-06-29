@@ -14,6 +14,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 
 import com.trema.pcpn.util.DataUtilities;
@@ -59,6 +66,59 @@ public class AspectSimilarity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public double aspectEntityRelationScore(ScoreDoc[] keyAspects, ScoreDoc[] retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
+		double score = 0;
+		for(ScoreDoc keyAsp:keyAspects) {
+			Document keyAspDoc = aspIs.doc(keyAsp.doc);
+			String keyAspText = keyAspDoc.getField("Text").stringValue();
+			String[] keyAspEntities = this.retrieveEntitiesFromAspText(keyAspText, is, con);
+			for(ScoreDoc retAsp:retAspects) {
+				Document retAspDoc = aspIs.doc(retAsp.doc);
+				String retAspText = retAspDoc.getField("Text").stringValue();
+				String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
+				double currEntSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities), option);
+				score+=currEntSimScore*keyAsp.score*retAsp.score;
+			}
+		}
+		return score;
+	}
+	
+	public String[] retrieveEntitiesFromAspText(String aspText, IndexSearcher is, Connection con) throws ParseException, IOException, SQLException {
+		String ent = "";
+		String[] aspParas = aspText.split("\n\n\n")[0].split("\n");
+		QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
+		//BooleanQuery.setMaxClauseCount(65536);
+		
+		for(String aspPara:aspParas) {
+			if(aspPara.endsWith(".")) {
+				Query q = qp.parse(QueryParser.escape(aspPara));
+				//Query q = qp.parse(aspPara);
+				Document paraDoc = is.doc(is.search(q, 1).scoreDocs[0].doc);
+				String paraText = paraDoc.get("parabody");
+				if(paraText.equalsIgnoreCase(aspPara)) {
+					String paraID = paraDoc.get("paraid");
+					PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+					preparedStatement.setString(1, paraID);
+					ResultSet resultSet = preparedStatement.executeQuery();
+					if(resultSet.next())
+						ent += " "+resultSet.getString(1);
+				}
+			}
+		}
+		System.out.println("Entites: "+ent);
+		return ent.trim().split(" ");
+	}
+	
+	public double entitySimilarityScore(List<String> entListKey, List<String> entListRet, String option) {
+		double score = 0;
+		for(String ent:entListKey) {
+			if(entListRet.contains(ent))
+				score+=1.0;
+		}
+		score/=entListKey.size();
+		return score;
 	}
 	
 	public double aspectMatchRatio(ScoreDoc[] keyAspects, ScoreDoc[] retAspects) {

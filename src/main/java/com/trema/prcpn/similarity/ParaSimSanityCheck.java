@@ -123,8 +123,9 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher isNoStops, IndexSearcher aspectIs, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException {
+	public String retrieveParaAspect(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException {
 		Random rand = new Random();
+		
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
 		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
 		String topRet = "";
@@ -153,6 +154,7 @@ public class ParaSimSanityCheck {
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
 			
 			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
+			double dummy = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
@@ -294,12 +296,12 @@ public class ParaSimSanityCheck {
 						sampleRet1.put(keyPara, this.retrieveParaW2V(keyPara, retParas, gloveVecs, gloveVecs.get("the").length, prop));
 					}
 					else if(method.equals("asp")) {
-						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, isNoStops, aspectIs, sampleQrels1, retAspNo, print));
+						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
 					}
 					else if(method.equals("ent")) {
 						sampleRet1.put(keyPara, this.retrieveParaEntity(keyPara, retParas, con, sampleQrels1, print));
 					}
-				} catch (IOException | ParseException e) {
+				} catch (IOException | ParseException | SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
