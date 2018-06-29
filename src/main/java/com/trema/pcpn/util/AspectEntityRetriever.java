@@ -52,6 +52,7 @@ public class AspectEntityRetriever {
 		Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 		Connection conAspEnt = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "aspent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 		PreparedStatement preparedStatement;
+		System.out.println("Starting...\n");
 		for (int i=0; i<reader.maxDoc(); i++) {
 			Document doc = reader.document(i);
 			String aspID = doc.getField("Id").stringValue();
@@ -64,6 +65,9 @@ public class AspectEntityRetriever {
 				preparedStatement = con.prepareStatement("insert into aspent values (?,?)");
 				preparedStatement.setString(1, aspID);
 				preparedStatement.setString(2, ent);
+				preparedStatement.executeUpdate();
+				if(i%10000==0)
+					System.out.print(".");
 			}
 		}
 	}
