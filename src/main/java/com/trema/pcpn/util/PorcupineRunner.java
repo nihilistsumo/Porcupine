@@ -154,6 +154,12 @@ public class PorcupineRunner {
 					asp.insertEntitiesInDB(paraEntFile, DataUtilities.getDBConnection(ip, db, table, user, pwd));
 				}
 			}
+			else if(args[0].equalsIgnoreCase("aspent")) {
+				AspectEntityRetriever aspEntRet = new AspectEntityRetriever();
+				String aspIndex = args[1];
+				String index = args[2];
+				aspEntRet.retrieveEntitiesFromAspect(prop, aspIndex, index);
+			}
 			else if(args[0].equalsIgnoreCase("cmb")) {
 				CombineRunFilesToRLibFetFile cmb = new CombineRunFilesToRLibFetFile();
 				String runfilesDir = args[1];
