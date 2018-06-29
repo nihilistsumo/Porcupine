@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -113,11 +114,13 @@ public class AspectSimilarity {
 	
 	public double entitySimilarityScore(List<String> entListKey, List<String> entListRet, String option) {
 		double score = 0;
-		for(String ent:entListKey) {
-			if(entListRet.contains(ent))
+		HashSet<String> keySet = new HashSet<String>(entListKey);
+		HashSet<String> retSet = new HashSet<String>(entListRet);
+		for(String ent:keySet) {
+			if(retSet.contains(ent))
 				score+=1.0;
 		}
-		score/=entListKey.size();
+		score/=keySet.size();
 		return score;
 	}
 	

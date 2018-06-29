@@ -153,8 +153,8 @@ public class ParaSimSanityCheck {
 			q = qpAspText.parse(QueryParser.escape(queryString));
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
 			
-			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
-			double dummy = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
+			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
+			double currScore = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
