@@ -196,6 +196,28 @@ public class ParaSimSanityCheck {
 		}
 	}
 	
+	public void printSampleDetails(HashMap<String, ArrayList<String>> sample, IndexSearcher isNoStops, IndexSearcher is) throws IOException, ParseException {
+		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+		for(String keyParaID:sample.keySet()) {
+			String relParaID = sample.get(keyParaID).get(0);
+			String nonRelParaID1 = sample.get(keyParaID).get(1);
+			String nonRelParaID2 = sample.get(keyParaID).get(2);
+			System.out.println("Keypara ID: "+keyParaID);
+			String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyParaID), 1).scoreDocs[0].doc).get("parabody");
+			System.out.println("Query String: "+queryString+"\n");
+			System.out.println("Paratext: "+is.doc(is.search(qpID.parse(keyParaID), 1).scoreDocs[0].doc).get("parabody")+"\n");
+			
+			System.out.println("Relevant para ID: "+relParaID);
+			System.out.println("Paratext: "+is.doc(is.search(qpID.parse(relParaID), 1).scoreDocs[0].doc).get("parabody")+"\n");
+			
+			System.out.println("non-Relevant1 para ID: "+nonRelParaID1);
+			System.out.println("Paratext: "+is.doc(is.search(qpID.parse(nonRelParaID1), 1).scoreDocs[0].doc).get("parabody")+"\n");
+			
+			System.out.println("non-Relevant2 para ID: "+nonRelParaID2);
+			System.out.println("Paratext: "+is.doc(is.search(qpID.parse(nonRelParaID2), 1).scoreDocs[0].doc).get("parabody")+"\n");
+		}
+	}
+	
 	// methods to be tried are separated by :
 	public void check(Properties prop, String methods, String indexDirAspPath, String indexDirPath, String indexDirNoStops, String topQrelsPath, String artQrelsPath, int keyNo, int retAspNo, String print) throws IOException, ParseException, ClassNotFoundException, SQLException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
@@ -203,15 +225,21 @@ public class ParaSimSanityCheck {
 		IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirAspPath).toPath()))));
 		SubsampleForRlib sampler = new SubsampleForRlib();
 		HashMap<String, ArrayList<String>> sample = sampler.subSample(topQrelsPath, artQrelsPath);
+		if(print.equalsIgnoreCase("print"))
+			this.printSampleDetails(sample, isNoStops, is);
 		ArrayList<String> qparaset = new ArrayList<String>(sample.keySet());
 		ArrayList<String> qSoFar = new ArrayList<String>();
 		Random rand = new Random();
-		for(int i=0; i<keyNo; i++) {
-			String keyPara = "";
-			keyPara = qparaset.get(rand.nextInt(qparaset.size()));
-			while(qSoFar.contains(keyPara))
+		if(keyNo>=qparaset.size())
+			qSoFar.addAll(qparaset);
+		else {
+			for(int i=0; i<keyNo; i++) {
+				String keyPara = "";
 				keyPara = qparaset.get(rand.nextInt(qparaset.size()));
-			qSoFar.add(keyPara);
+				while(qSoFar.contains(keyPara))
+					keyPara = qparaset.get(rand.nextInt(qparaset.size()));
+				qSoFar.add(keyPara);
+			}
 		}
 		ILexicalDatabase db = new NictWordNet();
 		Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
