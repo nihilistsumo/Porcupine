@@ -30,7 +30,7 @@ public class AspectEntityRetriever {
 			if(aspPara.endsWith(".")) {
 				Query q = qp.parse(QueryParser.escape(aspPara));
 				//Query q = qp.parse(aspPara);
-				Document paraDoc = is.doc(is.search(q, 1).scoreDocs[0].doc);
+				Document paraDoc = is.doc(is.search(q, 1).scoreDocs[0].doc);//may retrieve nothing, have to handle null pointer for scoreDocs
 				String paraText = paraDoc.get("parabody");
 				if(paraText.equalsIgnoreCase(aspPara)) {
 					String paraID = paraDoc.get("paraid");

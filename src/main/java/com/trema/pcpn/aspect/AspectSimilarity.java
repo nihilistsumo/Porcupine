@@ -73,12 +73,14 @@ public class AspectSimilarity {
 		double score = 0;
 		for(ScoreDoc keyAsp:keyAspects) {
 			Document keyAspDoc = aspIs.doc(keyAsp.doc);
-			String keyAspText = keyAspDoc.getField("Text").stringValue();
-			String[] keyAspEntities = this.retrieveEntitiesFromAspText(keyAspText, is, con);
+			String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
+			String[] keyAspEntities = this.retrieveEntitiesFromAspText(keyAspParas, is, con);
 			for(ScoreDoc retAsp:retAspects) {
 				Document retAspDoc = aspIs.doc(retAsp.doc);
-				String retAspText = retAspDoc.getField("Text").stringValue();
-				String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
+				//String retAspText = retAspDoc.getField("Text").stringValue();
+				//String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
+				String retAspParas = retAspDoc.getField("ParasInSection").stringValue();
+				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con);
 				double currEntSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities), option);
 				score+=currEntSimScore*keyAsp.score*retAsp.score;
 			}
@@ -109,6 +111,23 @@ public class AspectSimilarity {
 			}
 		}
 		//System.out.println("Entites: "+ent);
+		return ent.trim().split(" ");
+	}
+	
+	public String[] retrieveEntitiesFromAspParas(String paras, Connection con) {
+		String ent = "";
+		for(String paraID:paras.split(" ")) {
+			try {
+				PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+				preparedStatement.setString(1, paraID);
+				ResultSet resultSet = preparedStatement.executeQuery();
+				if(resultSet.next())
+					ent += " "+resultSet.getString(1);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return ent.trim().split(" ");
 	}
 	
