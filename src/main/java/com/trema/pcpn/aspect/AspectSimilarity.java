@@ -69,12 +69,12 @@ public class AspectSimilarity {
 		}
 	}
 	
-	public double aspectEntityRelationScore(ScoreDoc[] keyAspects, ScoreDoc[] retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
+	public double aspectRelationScore(ScoreDoc[] keyAspects, ScoreDoc[] retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
 		double score = 0;
 		for(ScoreDoc keyAsp:keyAspects) {
 			Document keyAspDoc = aspIs.doc(keyAsp.doc);
 			String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
-			String[] keyAspEntities = this.retrieveEntitiesFromAspText(keyAspParas, is, con);
+			String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
 			for(ScoreDoc retAsp:retAspects) {
 				Document retAspDoc = aspIs.doc(retAsp.doc);
 				//String retAspText = retAspDoc.getField("Text").stringValue();

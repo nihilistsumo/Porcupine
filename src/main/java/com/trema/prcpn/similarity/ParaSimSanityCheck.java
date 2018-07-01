@@ -153,8 +153,8 @@ public class ParaSimSanityCheck {
 			q = qpAspText.parse(QueryParser.escape(queryString));
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
 			
-			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
-			double currScore = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
+			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
+			//double currScore = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
@@ -205,6 +205,56 @@ public class ParaSimSanityCheck {
 			
 			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara)+aspSim.entityMatchRatio(keyPara, ret, con, printAspects);
 			//double currScore = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
+			if(printAspects.equalsIgnoreCase("print")) {
+				System.out.println("Para ID: "+ret);
+				System.out.println("Aspect similrity score with keypara = "+currScore);
+				this.printAspects(ret, retAspectsRetPara, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
+				System.out.println("\n\n");
+			}
+			if(currScore>topScore) {
+				topRet = ret;
+				topScore = currScore;
+			}
+		}
+		if(topRet.equals("")) {
+			System.out.print(".");
+			topRet = retParas.get(rand.nextInt(retParas.size()));
+		}
+		return topRet;
+	}
+	
+	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException {
+		Random rand = new Random();
+		
+		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
+		String topRet = "";
+		double topScore = 0;
+		String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+		if(printAspects.equalsIgnoreCase("print")) {
+			System.out.println("Keypara: "+keyPara);
+			System.out.println("Query String: "+queryString+"\n");
+		}
+		BooleanQuery.setMaxClauseCount(65536);
+		Query q = qpAspText.parse(QueryParser.escape(queryString));
+		//TopDocs tdsKeypara = aspectIs.search(q, 100);
+		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, retAspNo).scoreDocs;
+		if(printAspects.equalsIgnoreCase("print")) {
+			System.out.println("Aspects of key "+keyPara);
+			System.out.println("--------------\n");
+			this.printAspects(keyPara, retAspectsKeyPara, aspectIs, false);
+		}
+		AspectSimilarity aspSim = new AspectSimilarity();
+		for(String ret:retParas) {
+			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
+			//double currScore = aspectIs.explain(q, retDocID).getValue();
+			queryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
+			BooleanQuery.setMaxClauseCount(65536);
+			q = qpAspText.parse(QueryParser.escape(queryString));
+			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
+			
+			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
+			double currScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
@@ -353,6 +403,9 @@ public class ParaSimSanityCheck {
 					}
 					else if(method.equals("aspent")) {
 						sampleRet1.put(keyPara, this.retrieveParaAspectAndEntity(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
+					}
+					else if(method.equals("asprel")) {
+						sampleRet1.put(keyPara, this.retrieveParaAspectRelation(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
 					}
 				} catch (IOException | ParseException | SQLException e) {
 					// TODO Auto-generated catch block
