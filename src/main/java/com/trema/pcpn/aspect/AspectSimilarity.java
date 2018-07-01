@@ -154,8 +154,9 @@ public class AspectSimilarity {
 		return (double)match/keyAspects.length;
 	}
 	
-	public ArrayList<String> findCommonEntities(String paraID1, String paraID2, Connection con, String print) {
+	public double entityMatchRatio(String paraID1, String paraID2, Connection con, String print) {
 		ArrayList<String> commonEntities = new ArrayList<String>();
+		double ratio = 0.0;
 		try {
 			PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
 			preparedStatement.setString(1, paraID1);
@@ -163,7 +164,7 @@ public class AspectSimilarity {
 			if(!resultSet.next()) {
 				if(print.equalsIgnoreCase("print"))
 					System.out.println("No entities linked in Keypara "+paraID1);
-				return commonEntities;
+				return 0.0;
 			}
 			String ent1 = resultSet.getString(1);
 			if(print.equalsIgnoreCase("print")) {
@@ -174,7 +175,7 @@ public class AspectSimilarity {
 			if(!resultSet.next()) {
 				if(print.equalsIgnoreCase("print"))
 					System.out.println("No entities linked in ret para "+paraID2);
-				return commonEntities;
+				return 0.0;
 			}
 			String ent2 = resultSet.getString(1);
 			if(print.equalsIgnoreCase("print")) {
@@ -186,11 +187,12 @@ public class AspectSimilarity {
 				if(entList2.contains(e))
 					commonEntities.add(e);
 			}
+			ratio = ((double)commonEntities.size())/entList1.size();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return commonEntities;
+		return ratio;
 	}
 
 	public static void main(String[] args) {
