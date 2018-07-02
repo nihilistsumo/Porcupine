@@ -238,11 +238,11 @@ public class ParaSimSanityCheck {
 		BooleanQuery.setMaxClauseCount(65536);
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
-		ScoreDoc[] retAspectsKeyPara = aspectIs.search(q, retAspNo).scoreDocs;
+		TopDocs retAspectsKeyPara = aspectIs.search(q, retAspNo);
 		if(printAspects.equalsIgnoreCase("print")) {
 			System.out.println("Aspects of key "+keyPara);
 			System.out.println("--------------\n");
-			this.printAspects(keyPara, retAspectsKeyPara, aspectIs, false);
+			this.printAspects(keyPara, retAspectsKeyPara.scoreDocs, aspectIs, false);
 		}
 		AspectSimilarity aspSim = new AspectSimilarity();
 		for(String ret:retParas) {
@@ -251,14 +251,14 @@ public class ParaSimSanityCheck {
 			queryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
 			BooleanQuery.setMaxClauseCount(65536);
 			q = qpAspText.parse(QueryParser.escape(queryString));
-			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
+			TopDocs retAspectsRetPara = aspectIs.search(q, retAspNo);
 			
 			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
 			double currScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
 				System.out.println("Aspect similrity score with keypara = "+currScore);
-				this.printAspects(ret, retAspectsRetPara, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
+				this.printAspects(ret, retAspectsRetPara.scoreDocs, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
 				System.out.println("\n\n");
 			}
 			if(currScore>topScore) {

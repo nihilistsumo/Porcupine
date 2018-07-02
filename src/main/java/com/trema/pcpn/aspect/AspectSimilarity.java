@@ -23,6 +23,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 
 import com.trema.pcpn.util.DataUtilities;
 
@@ -69,20 +70,20 @@ public class AspectSimilarity {
 		}
 	}
 	
-	public double aspectRelationScore(ScoreDoc[] keyAspects, ScoreDoc[] retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
+	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
 		double score = 0;
-		for(ScoreDoc keyAsp:keyAspects) {
+		for(ScoreDoc keyAsp:keyAspects.scoreDocs) {
 			Document keyAspDoc = aspIs.doc(keyAsp.doc);
 			String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
 			String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
-			for(ScoreDoc retAsp:retAspects) {
+			for(ScoreDoc retAsp:retAspects.scoreDocs) {
 				Document retAspDoc = aspIs.doc(retAsp.doc);
 				//String retAspText = retAspDoc.getField("Text").stringValue();
 				//String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
 				String retAspParas = retAspDoc.getField("ParasInSection").stringValue();
 				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con);
 				double currEntSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities), option);
-				score+=currEntSimScore*keyAsp.score*retAsp.score;
+				score+=currEntSimScore*(keyAsp.score/keyAspects.getMaxScore())*(retAsp.score/retAspects.getMaxScore());
 			}
 		}
 		return score;
