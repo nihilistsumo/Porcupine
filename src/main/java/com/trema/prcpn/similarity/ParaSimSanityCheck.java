@@ -260,7 +260,9 @@ public class ParaSimSanityCheck {
 				this.printAspects(ret, retAspectsRetPara.scoreDocs, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
 				System.out.println("\n\n");
 			}
-			double currScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default", printAspects);
+			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default", printAspects)
+					+aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs)
+					+aspSim.entityMatchRatio(keyPara, ret, con, printAspects))/3;
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
