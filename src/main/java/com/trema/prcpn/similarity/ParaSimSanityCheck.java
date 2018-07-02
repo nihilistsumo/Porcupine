@@ -254,13 +254,13 @@ public class ParaSimSanityCheck {
 			TopDocs retAspectsRetPara = aspectIs.search(q, retAspNo);
 			
 			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
-			double currScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
+			
 			if(printAspects.equalsIgnoreCase("print")) {
-				System.out.println("Para ID: "+ret);
-				System.out.println("Aspect similrity score with keypara = "+currScore);
+				System.out.println("Aspects of ret para: "+ret);
 				this.printAspects(ret, retAspectsRetPara.scoreDocs, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
 				System.out.println("\n\n");
 			}
+			double currScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default", printAspects);
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;

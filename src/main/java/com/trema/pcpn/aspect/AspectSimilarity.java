@@ -70,21 +70,34 @@ public class AspectSimilarity {
 		}
 	}
 	
-	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option) throws IOException, ParseException, SQLException {
+	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, String print) throws IOException, ParseException, SQLException {
 		double score = 0;
 		for(ScoreDoc keyAsp:keyAspects.scoreDocs) {
 			Document keyAspDoc = aspIs.doc(keyAsp.doc);
 			String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
 			String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
+			if(print.equalsIgnoreCase("print")) {
+				System.out.println("\nEntities from Key aspect "+keyAspDoc.getField("Id").stringValue());
+				for(String ent:keyAspEntities)
+					System.out.print(ent+" ");
+			}
 			for(ScoreDoc retAsp:retAspects.scoreDocs) {
 				Document retAspDoc = aspIs.doc(retAsp.doc);
 				//String retAspText = retAspDoc.getField("Text").stringValue();
 				//String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
 				String retAspParas = retAspDoc.getField("ParasInSection").stringValue();
 				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con);
+				if(print.equalsIgnoreCase("print")) {
+					System.out.println("\nEntities from aspect "+retAspDoc.getField("Id").stringValue());
+					for(String ent:retAspEntities)
+						System.out.print(ent+" ");
+				}
 				double currEntSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities), option);
 				score+=currEntSimScore*(keyAsp.score/keyAspects.getMaxScore())*(retAsp.score/retAspects.getMaxScore());
 			}
+		}
+		if(print.equalsIgnoreCase("print")) {
+			System.out.println("Asp rel score = "+score);
 		}
 		return score;
 	}
