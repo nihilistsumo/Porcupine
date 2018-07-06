@@ -225,7 +225,7 @@ public class ParaSimSanityCheck {
 	
 	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException {
 		Random rand = new Random();
-		
+		System.out.println("\nKey: "+keyPara);
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
 		QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
 		String topRet = "";
@@ -239,7 +239,7 @@ public class ParaSimSanityCheck {
 		Query q = qpAspText.parse(QueryParser.escape(queryString));
 		//TopDocs tdsKeypara = aspectIs.search(q, 100);
 		TopDocs retAspectsKeyPara = aspectIs.search(q, retAspNo);
-		if(printAspects.equalsIgnoreCase("print")) {
+		if(printAspects.equalsIgnoreCase("printu")) {
 			System.out.println("Aspects of key "+keyPara);
 			System.out.println("--------------\n");
 			this.printAspects(keyPara, retAspectsKeyPara.scoreDocs, aspectIs, false);
@@ -248,19 +248,20 @@ public class ParaSimSanityCheck {
 		for(String ret:retParas) {
 			//int retDocID = aspectIs.search(qpID.parse(ret), 1).scoreDocs[0].doc;
 			//double currScore = aspectIs.explain(q, retDocID).getValue();
-			queryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
+			String retQueryString = isNoStops.doc(isNoStops.search(qpID.parse(ret), 1).scoreDocs[0].doc).get("parabody");
 			BooleanQuery.setMaxClauseCount(65536);
-			q = qpAspText.parse(QueryParser.escape(queryString));
-			TopDocs retAspectsRetPara = aspectIs.search(q, retAspNo);
+			Query retQ = qpAspText.parse(QueryParser.escape(retQueryString));
+			TopDocs retAspectsRetPara = aspectIs.search(retQ, retAspNo);
 			
 			//double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara);
 			
-			if(printAspects.equalsIgnoreCase("print")) {
+			if(printAspects.equalsIgnoreCase("printu")) {
 				System.out.println("Aspects of ret para: "+ret);
 				this.printAspects(ret, retAspectsRetPara.scoreDocs, aspectIs, ret.equalsIgnoreCase(qrels.get(keyPara)));
 				System.out.println("\n\n");
 			}
-			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default", printAspects)
+			
+			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asptext", printAspects)
 					+aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs)
 					+aspSim.entityMatchRatio(keyPara, ret, con, printAspects))/3;
 			if(currScore>topScore) {
@@ -275,7 +276,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	private void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, boolean isRel) {
+	public void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, boolean isRel) {
 		int rank = 1;
 		System.out.println("Retrieved aspects");
 		if(isRel)

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -70,11 +72,16 @@ public class AspectSimilarity {
 		}
 	}
 	
+	/*
 	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, String print) throws IOException, ParseException, SQLException {
 		double score = 0;
 		int count = 0;
+		QueryParser qpLead = new QueryParser("LeadText", new StandardAnalyzer());
+		QueryParser qpText = new QueryParser("Text", new StandardAnalyzer());
 		for(ScoreDoc keyAsp:keyAspects.scoreDocs) {
 			Document keyAspDoc = aspIs.doc(keyAsp.doc);
+			String keyLeadText = keyAspDoc.getField("LeadText").stringValue();
+			String keyText = keyAspDoc.getField("Text").stringValue();
 			String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
 			String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
 			if(print.equalsIgnoreCase("print")) {
@@ -82,6 +89,11 @@ public class AspectSimilarity {
 				for(String ent:keyAspEntities)
 					System.out.print(ent+" ");
 			}
+			Query q = null;
+			if(option.equalsIgnoreCase("asptext"))
+				q = qpText.parse(QueryParser.escape(keyText));
+			else if(option.equalsIgnoreCase("asplead"))
+				q = qpLead.parse(QueryParser.escape(keyLeadText));
 			for(ScoreDoc retAsp:retAspects.scoreDocs) {
 				Document retAspDoc = aspIs.doc(retAsp.doc);
 				//String retAspText = retAspDoc.getField("Text").stringValue();
@@ -93,8 +105,25 @@ public class AspectSimilarity {
 					for(String ent:retAspEntities)
 						System.out.print(ent+" ");
 				}
-				double currEntSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities), option);
-				score+=currEntSimScore*(keyAsp.score/keyAspects.getMaxScore())*(retAsp.score/retAspects.getMaxScore());
+				double currSimScore = 0;
+				if(option.equalsIgnoreCase("ent"))
+					currSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities));
+				else if(option.equalsIgnoreCase("asptext")) {
+					currSimScore = aspIs.explain(q, retAsp.doc).getValue();
+				}
+				else if(option.equalsIgnoreCase("asplead")) {
+					currSimScore = aspIs.explain(q, retAsp.doc).getValue();
+				}
+				
+				if(option.equalsIgnoreCase("rel"))
+					System.out.println("\nRelevant");
+				else
+					System.out.println("\nNon-relevant");
+				System.out.println("Key aspect importance = "+keyAsp.score/keyAspects.getMaxScore());
+				System.out.println("Ret aspect importance = "+retAsp.score/retAspects.getMaxScore());
+				System.out.println("Entity similarity score = "+currEntSimScore);
+				
+				score+=currSimScore*(keyAsp.score/keyAspects.getMaxScore())*(retAsp.score/retAspects.getMaxScore());
 				count++;
 			}
 		}
@@ -102,6 +131,109 @@ public class AspectSimilarity {
 			System.out.println("Asp rel score = "+score);
 		}
 		return score/count;
+	}
+	*/
+	
+	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, String print) throws IOException, ParseException, SQLException {
+		double score = 0;
+		int count = keyAspects.scoreDocs.length*retAspects.scoreDocs.length;
+		ExecutorService exec = Executors.newCachedThreadPool();
+		double[] individualScores = new double[count];
+		int i = 0;
+		for(ScoreDoc keyDoc:keyAspects.scoreDocs) {
+			for(ScoreDoc retDoc:retAspects.scoreDocs) {
+				Runnable aspectCalcThread = new AspectRelationCalculationThread(keyDoc, retDoc, keyAspects.getMaxScore(), retAspects.getMaxScore(), is, aspIs, con, option, individualScores, i);
+				exec.execute(aspectCalcThread);
+				i++;
+			}
+		}
+		exec.shutdown();
+		for(double s:individualScores)
+			score+=s;
+		return score/count;
+	}
+	
+	public class AspectRelationCalculationThread implements Runnable {
+		
+		public AspectRelationCalculationThread(ScoreDoc keyDoc, ScoreDoc retDoc, float keyMaxScore, float retMaxScore, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, double[] score, int index) {
+			// TODO Auto-generated constructor stub
+			try {
+				Document keyAspDoc = aspIs.doc(keyDoc.doc);
+				String keyLeadText = keyAspDoc.getField("LeadText").stringValue();
+				String keyText = keyAspDoc.getField("Text").stringValue();
+				String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
+				Document retAspDoc = aspIs.doc(retDoc.doc);
+				//String retAspText = retAspDoc.getField("Text").stringValue();
+				//String[] retAspEntities = this.retrieveEntitiesFromAspText(retAspText, is, con);
+				String retAspParas = retAspDoc.getField("ParasInSection").stringValue();
+				String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
+				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con);
+				QueryParser qpLead = new QueryParser("LeadText", new StandardAnalyzer());
+				QueryParser qpText = new QueryParser("Text", new StandardAnalyzer());
+				Query q = null;
+				if(option.equalsIgnoreCase("asptext"))
+					q = qpText.parse(QueryParser.escape(keyText));
+				else if(option.equalsIgnoreCase("asplead"))
+					q = qpLead.parse(QueryParser.escape(keyLeadText));
+				
+				double currSimScore = 0;
+				if(option.equalsIgnoreCase("ent"))
+					currSimScore = this.entitySimilarityScore(Arrays.asList(keyAspEntities), Arrays.asList(retAspEntities));
+				else if(option.equalsIgnoreCase("asptext")) {
+					currSimScore = aspIs.explain(q, retDoc.doc).getValue();
+				}
+				else if(option.equalsIgnoreCase("asplead")) {
+					currSimScore = aspIs.explain(q, retDoc.doc).getValue();
+				}
+				
+				
+				//System.out.println("Key aspect importance = "+keyAsp.score/keyAspects.getMaxScore());
+				//System.out.println("Ret aspect importance = "+retAsp.score/retAspects.getMaxScore());
+				//System.out.println("Entity similarity score = "+currEntSimScore);
+				
+				score[index]=currSimScore*(keyDoc.score/keyMaxScore)*(retDoc.score/retMaxScore);
+				System.out.print(".");
+			} catch (IOException | ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		public String[] retrieveEntitiesFromAspParas(String paras, Connection con) {
+			String ent = "";
+			for(String paraID:paras.split(" ")) {
+				try {
+					PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+					preparedStatement.setString(1, paraID);
+					ResultSet resultSet = preparedStatement.executeQuery();
+					if(resultSet.next())
+						ent += " "+resultSet.getString(1);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return ent.trim().split(" ");
+		}
+		
+		public double entitySimilarityScore(List<String> entListKey, List<String> entListRet) {
+			double score = 0;
+			HashSet<String> keySet = new HashSet<String>(entListKey);
+			HashSet<String> retSet = new HashSet<String>(entListRet);
+			for(String ent:keySet) {
+				if(retSet.contains(ent))
+					score+=1.0;
+			}
+			score/=keySet.size();
+			return score;
+		}
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 	
 	public String[] retrieveEntitiesFromAspText(String aspText, IndexSearcher is, Connection con) throws ParseException, IOException, SQLException {
@@ -147,7 +279,7 @@ public class AspectSimilarity {
 		return ent.trim().split(" ");
 	}
 	
-	public double entitySimilarityScore(List<String> entListKey, List<String> entListRet, String option) {
+	public double entitySimilarityScore(List<String> entListKey, List<String> entListRet) {
 		double score = 0;
 		HashSet<String> keySet = new HashSet<String>(entListKey);
 		HashSet<String> retSet = new HashSet<String>(entListRet);
