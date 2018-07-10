@@ -88,7 +88,7 @@ public class AspectRelationDebug {
 					System.out.println("Entity match ratio = "+entMatchRatio);
 				}
 			}
-		} catch (IOException | ClassNotFoundException | SQLException | ParseException e) {
+		} catch (IOException | ClassNotFoundException | SQLException | ParseException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

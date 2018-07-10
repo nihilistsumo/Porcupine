@@ -223,7 +223,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException {
+	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException, InterruptedException {
 		Random rand = new Random();
 		System.out.println("\nKey: "+keyPara);
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
@@ -410,7 +410,7 @@ public class ParaSimSanityCheck {
 					else if(method.equals("asprel")) {
 						sampleRet1.put(keyPara, this.retrieveParaAspectRelation(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
 					}
-				} catch (IOException | ParseException | SQLException e) {
+				} catch (IOException | ParseException | SQLException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

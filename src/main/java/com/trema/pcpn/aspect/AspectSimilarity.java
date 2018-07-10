@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -134,7 +135,7 @@ public class AspectSimilarity {
 	}
 	*/
 	
-	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, String print) throws IOException, ParseException, SQLException {
+	public double aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String option, String print) throws IOException, ParseException, SQLException, InterruptedException {
 		double score = 0;
 		int count = keyAspects.scoreDocs.length*retAspects.scoreDocs.length;
 		ExecutorService exec = Executors.newCachedThreadPool();
@@ -148,6 +149,7 @@ public class AspectSimilarity {
 			}
 		}
 		exec.shutdown();
+		exec.awaitTermination(1, TimeUnit.DAYS);
 		for(double s:individualScores)
 			score+=s;
 		return score/count;
@@ -192,7 +194,7 @@ public class AspectSimilarity {
 				//System.out.println("Entity similarity score = "+currEntSimScore);
 				
 				score[index]=currSimScore*(keyDoc.score/keyMaxScore)*(retDoc.score/retMaxScore);
-				System.out.print(".");
+				//System.out.print(".");
 			} catch (IOException | ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -9,6 +9,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.aspect.AspectSimilarity;
+import com.trema.pcpn.aspect.ParasimAspectRlib;
+import com.trema.pcpn.aspect.ParasimAspectSimJob;
 import com.trema.pcpn.parasimutil.CombineRunFilesToRLibFetFile;
 import com.trema.pcpn.parasimutil.CombineRunFilesUsingRlibModel;
 import com.trema.pcpn.parasimutil.ParasimFetFileWriter;
@@ -182,6 +184,21 @@ public class PorcupineRunner {
 				int retParaInComb = Integer.parseInt(args[4]);
 				CombineRunFilesUsingRlibModel cmbrun = new CombineRunFilesUsingRlibModel();
 				cmbrun.writeRunFile(prop, runfilesDir, rlibModelPath, outputRunfilePath, retParaInComb);
+			}
+			else if(args[0].equalsIgnoreCase("asp2cv")) {
+				String titlesPath = args[1];
+				String candSetRunFilePath = args[2];
+				String artQrelsPath = args[3];
+				String paraSimQrelsPath = args[4];
+				String fetFileOutputDir = args[5];
+				String aspIsPath = args[6];
+				String isPath = args[7];
+				String isNoStopPath = args[8];
+				int retAspNo = Integer.parseInt(args[9]);
+				String features = args[10];
+				String withTruePagePara = args[11];
+				ParasimAspectRlib parasimAsp = new ParasimAspectRlib();
+				parasimAsp.run2foldCV(prop, titlesPath, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir, aspIsPath, isPath, isNoStopPath, retAspNo, features, withTruePagePara);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
