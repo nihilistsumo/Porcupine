@@ -261,7 +261,7 @@ public class ParaSimSanityCheck {
 				System.out.println("\n\n");
 			}
 			
-			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asptext", printAspects)
+			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, printAspects)[1]
 					+aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs)
 					+aspSim.entityMatchRatio(keyPara, ret, con, printAspects))/3;
 			if(currScore>topScore) {

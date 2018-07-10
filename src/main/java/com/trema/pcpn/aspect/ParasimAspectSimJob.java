@@ -25,16 +25,14 @@ public class ParasimAspectSimJob implements Runnable {
 
 			HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
 			AspectSimilarity aspSim = new AspectSimilarity();
-			double aspRelScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "ent", "na");
-			double aspTextScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asptext", "na");
-			double aspLeadScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asplead", "na");
+			double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na");
 			double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
 			double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na");
 
 			HashMap<String, Double> featureScores = new HashMap<String, Double>();
-			featureScores.put("asprel", aspRelScore);
-			featureScores.put("asptext", aspTextScore);
-			featureScores.put("asplead", aspLeadScore);
+			featureScores.put("asprel", aspScore[0]);
+			featureScores.put("asptext", aspScore[1]);
+			featureScores.put("asplead", aspScore[2]);
 			featureScores.put("aspmatch", aspectMatchRatio);
 			featureScores.put("entmatch", entMatchRatio);
 

@@ -76,14 +76,12 @@ public class AspectRelationDebug {
 					System.out.println(rel+" para "+retPara+" Aspects:");
 					//this.printAspects(retPara, retAspectsRetPara.scoreDocs, aspectIs, con);
 					
-					double aspRelScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "ent", "na");
-					double aspTextScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asptext", "na");
-					double aspLeadScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "asplead", "na");
+					double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na");
 					double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
 					double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na");
-					System.out.println("\nAspect relation score = "+aspRelScore);
-					System.out.println("Aspect text score = "+aspTextScore);
-					System.out.println("Aspect lead score = "+aspLeadScore);
+					System.out.println("\nAspect relation score = "+aspScore[0]);
+					System.out.println("Aspect text score = "+aspScore[1]);
+					System.out.println("Aspect lead score = "+aspScore[2]);
 					System.out.println("Aspect match ratio = "+aspectMatchRatio);
 					System.out.println("Entity match ratio = "+entMatchRatio);
 				}
