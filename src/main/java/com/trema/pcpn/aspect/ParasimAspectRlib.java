@@ -101,7 +101,7 @@ public class ParasimAspectRlib {
 				HashMap<String, HashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
 				String pageID = pageAndKey.split("_")[0];
 				String keyPara = pageAndKey.split("_")[1];
-				ArrayList<String> relParas = parasimQrels.get(keyPara);
+				ArrayList<String> relParas = parasimQrels.get(pageID+":"+keyPara);
 				for(String retPara:scoreMap.keySet()) {
 					HashMap<String, Double> scores = scoreMap.get(retPara);
 					String fetLine = "";
@@ -161,8 +161,8 @@ public class ParasimAspectRlib {
 				truePagePara = true;
 			
 			HashSet<String> tinySet = new HashSet<String>();
-			tinySet.add("Chocolate");
-			tinySet.add("Cholera");
+			tinySet.add("Chocolate%20chip");
+			tinySet.add("Contingent%20work");
 			
 			this.train(tinySet, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, retAspNo, features, truePagePara);
 		} catch (IOException | ClassNotFoundException | SQLException e) {
