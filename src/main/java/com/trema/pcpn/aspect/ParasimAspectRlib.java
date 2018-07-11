@@ -133,7 +133,7 @@ public class ParasimAspectRlib {
 		HashMap<String, ArrayList<String>> candPageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetRunFilePath);
 		HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(artQrelsPath);
 		HashMap<String, ArrayList<String>> pageParaMapFull;
-		if(withTruePagePara)
+		if(withTruePagePara) 
 			pageParaMapFull = truePageParaMap;
 		else
 			pageParaMapFull = candPageParaMap;
