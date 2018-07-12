@@ -99,6 +99,7 @@ public class ParasimAspectRlib {
 			System.out.println("Feature scores calculated.\nWriting feature scores...");
 			for(String pageAndKey:scoresMap.keySet()) {
 				HashMap<String, HashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
+				HashMap<String, Double> maxScores = this.getMaxScores(scoreMap, features);
 				String pageID = pageAndKey.split("_")[0];
 				String keyPara = pageAndKey.split("_")[1];
 				ArrayList<String> relParas = parasimQrels.get(pageID+":"+keyPara);
@@ -106,12 +107,15 @@ public class ParasimAspectRlib {
 					HashMap<String, Double> scores = scoreMap.get(retPara);
 					String fetLine = "";
 					if(relParas!=null && relParas.contains(retPara))
-						fetLine = "1 qid:"+keyPara;
+						fetLine = "1 qid:"+pageID+":"+keyPara;
 					else
-						fetLine = "0 qid:"+keyPara;
+						fetLine = "0 qid:"+pageID+":"+keyPara;
 					int i = 1;
 					for(String feature:features.split(":")) {
-						fetLine+=" "+i+":"+scores.get(feature);
+						if(maxScores.get(feature)<0.00000001)
+							fetLine+=" "+i+":"+scores.get(feature);
+						else
+							fetLine+=" "+i+":"+scores.get(feature)/maxScores.get(feature);
 						i++;
 					}
 					fetLine+=" #"+retPara;
@@ -125,6 +129,21 @@ public class ParasimAspectRlib {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public HashMap<String, Double> getMaxScores(HashMap<String, HashMap<String, Double>> scoreMap, String features) {
+		HashMap<String, Double> maxScores = new HashMap<String, Double>();
+		for(String feature:features.split(":")) {
+			double max = 0;
+			double currScore = 0;
+			for(String retPara:scoreMap.keySet()) {
+				currScore = scoreMap.get(retPara).get(feature);
+				if(currScore>max)
+					max = currScore;
+			}
+			maxScores.put(feature, max);
+		}
+		return maxScores;
 	}
 	
 	public void train(HashSet<String> trainTitles, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputPath, Connection con, IndexSearcher aspectIs, 
@@ -164,7 +183,7 @@ public class ParasimAspectRlib {
 			tinySet.add("Chocolate%20chip");
 			tinySet.add("Contingent%20work");
 			
-			this.train(tinySet, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, retAspNo, features, truePagePara);
+			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, retAspNo, features, truePagePara);
 		} catch (IOException | ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

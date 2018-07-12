@@ -23,7 +23,6 @@ public class ParasimAspectSimJob implements Runnable {
 			TopDocs retAspectsKeyPara = paraAspects.get(keyPara);
 			TopDocs retAspectsRetPara = paraAspects.get(retPara);
 
-			HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
 			AspectSimilarity aspSim = new AspectSimilarity();
 			double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na");
 			double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
@@ -36,8 +35,13 @@ public class ParasimAspectSimJob implements Runnable {
 			featureScores.put("aspmatch", aspectMatchRatio);
 			featureScores.put("entmatch", entMatchRatio);
 
-			retParaScores.put(retPara, featureScores);
-			scoresMap.put(pageID+"_"+keyPara, retParaScores);
+			if(!scoresMap.containsKey(pageID+"_"+keyPara)) {
+				HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
+				retParaScores.put(retPara, featureScores);
+				scoresMap.put(pageID+"_"+keyPara, retParaScores);
+			}
+			else
+				scoresMap.get(pageID+"_"+keyPara).put(retPara, featureScores);
 			System.out.print(".");
 		} catch (IOException | ParseException | SQLException | InterruptedException e) {
 			// TODO Auto-generated catch block
