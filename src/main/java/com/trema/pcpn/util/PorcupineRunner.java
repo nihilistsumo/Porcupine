@@ -194,11 +194,12 @@ public class PorcupineRunner {
 				String aspIsPath = args[6];
 				String isPath = args[7];
 				String isNoStopPath = args[8];
-				int retAspNo = Integer.parseInt(args[9]);
-				String features = args[10];
-				String withTruePagePara = args[11];
+				String rlibPath = args[9];
+				int retAspNo = Integer.parseInt(args[10]);
+				String features = args[11];
+				String withTruePagePara = args[12];
 				ParasimAspectRlib parasimAsp = new ParasimAspectRlib();
-				parasimAsp.run2foldCV(prop, titlesPath, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir, aspIsPath, isPath, isNoStopPath, retAspNo, features, withTruePagePara);
+				parasimAsp.run2foldCV(prop, titlesPath, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir, aspIsPath, isPath, isNoStopPath, rlibPath, retAspNo, features, withTruePagePara);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

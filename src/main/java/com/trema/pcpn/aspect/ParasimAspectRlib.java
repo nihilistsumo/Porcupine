@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class ParasimAspectRlib {
 			
 			HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
 			System.out.println("Calculating feature scores...");
+			int p = 0;
 			for(String page:trainCandSet.keySet()) {
 				ArrayList<String> retParaList = trainCandSet.get(page);
 				HashMap<String, TopDocs> paraAspectMap = new HashMap<String, TopDocs>();
@@ -94,6 +96,8 @@ public class ParasimAspectRlib {
 					exec.awaitTermination(7, TimeUnit.DAYS);
 					System.out.println(".");
 				}
+				p++;
+				System.out.println(page+" is complete. "+(trainCandSet.keySet().size()-p)+" pages remaining...");
 			}
 			System.out.println();
 			System.out.println("Feature scores calculated.\nWriting feature scores...");
@@ -147,7 +151,7 @@ public class ParasimAspectRlib {
 	}
 	
 	public void train(HashSet<String> trainTitles, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputPath, Connection con, IndexSearcher aspectIs, 
-			IndexSearcher is, IndexSearcher isNoStops, int retAspNo, String features, boolean withTruePagePara) {
+			IndexSearcher is, IndexSearcher isNoStops, String rlibPath, int retAspNo, String features, boolean withTruePagePara) {
 		HashMap<String, ArrayList<String>> trainPageParaMap = new HashMap<String, ArrayList<String>>();
 		HashMap<String, ArrayList<String>> candPageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetRunFilePath);
 		HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(artQrelsPath);
@@ -163,10 +167,25 @@ public class ParasimAspectRlib {
 		}
 		HashMap<String, ArrayList<String>> paraSimQrels = DataUtilities.getGTMapQrels(paraSimQrelsPath);
 		this.writeRlibFetFileForTrain(trainPageParaMap, paraSimQrels, fetFileOutputPath, con, aspectIs, is, isNoStops, retAspNo, features);
+		
+		try {
+			String command = "java -jar "+rlibPath+" -train "+fetFileOutputPath+" -ranker 4 -metric2t MAP -save "+fetFileOutputPath+"-model";
+			System.out.println("Now running rlib with the following command:\n"+command);
+			Process p = Runtime.getRuntime().exec(command);
+			p.waitFor();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line = "";			
+			while ((line = reader.readLine())!= null) {
+				System.out.println(line);
+			}
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	public void run2foldCV(Properties prop, String titlesPath, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputDir, String aspIsPath, String isPath, String isNoStopPath,
-			int retAspNo, String features, String withTruePagePara) {
+	public void run2foldCV(Properties prop, String titlesPath, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputDir, String aspIsPath, 
+			String isPath, String isNoStopPath, String rlibPath, int retAspNo, String features, String withTruePagePara) {
 		try {
 			ArrayList<HashSet<String>> splittedDataset = this.split(titlesPath);
 			HashSet<String> titlesSet1 = splittedDataset.get(0);
@@ -183,7 +202,10 @@ public class ParasimAspectRlib {
 			tinySet.add("Chocolate%20chip");
 			tinySet.add("Contingent%20work");
 			
-			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, retAspNo, features, truePagePara);
+			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			//java -jar ~/Softwares/RankLib-2.1-patched.jar -train parasim-rlib-fet-part -ranker 4 -metric2t MAP -save parasim-rlib-fet-part-model
+			
 		} catch (IOException | ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
