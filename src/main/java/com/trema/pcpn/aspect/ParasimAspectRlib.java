@@ -30,6 +30,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
 import com.trema.pcpn.util.DataUtilities;
+import com.trema.prcpn.similarity.ParaSimRankerAspect;
 
 public class ParasimAspectRlib {
 	
@@ -184,12 +185,24 @@ public class ParasimAspectRlib {
 		}
 	}
 	
+	public void rank(Properties prop, HashSet<String> titlesSet, String indexDirPath, String indexDirNoStops, String indexDirAspect, String candRunFilePath, 
+			String articleQrelsPath, String outRunPath, String rlibModelPath, Connection con, String method, int retAspNo) {
+		try {
+			ParaSimRankerAspect aspectRanker = new ParaSimRankerAspect();
+			aspectRanker.rank(prop, titlesSet, indexDirPath, indexDirNoStops, indexDirAspect, candRunFilePath, articleQrelsPath, outRunPath, rlibModelPath, con, method, retAspNo);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void run2foldCV(Properties prop, String titlesPath, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputDir, String aspIsPath, 
-			String isPath, String isNoStopPath, String rlibPath, int retAspNo, String features, String withTruePagePara) {
+			String isPath, String isNoStopPath, String rlibPath, int retAspNo, String withTruePagePara) {
 		try {
 			ArrayList<HashSet<String>> splittedDataset = this.split(titlesPath);
 			HashSet<String> titlesSet1 = splittedDataset.get(0);
 			HashSet<String> titlesSet2 = splittedDataset.get(1);
+			String features = prop.getProperty("asp-features");
 			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isPath).toPath()))));
 			IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isNoStopPath).toPath()))));
 			IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(aspIsPath).toPath()))));
@@ -202,8 +215,10 @@ public class ParasimAspectRlib {
 			tinySet.add("Chocolate%20chip");
 			tinySet.add("Contingent%20work");
 			
-			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
-			this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			//this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			//this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			this.rank(prop, titlesSet2, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set2-run", fetFileOutputDir+"/train1-fet-model", con, withTruePagePara, retAspNo);
+			this.rank(prop, titlesSet1, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set1-run", fetFileOutputDir+"/train2-fet-model", con, withTruePagePara, retAspNo);
 			//java -jar ~/Softwares/RankLib-2.1-patched.jar -train parasim-rlib-fet-part -ranker 4 -metric2t MAP -save parasim-rlib-fet-part-model
 			
 		} catch (IOException | ClassNotFoundException | SQLException e) {
