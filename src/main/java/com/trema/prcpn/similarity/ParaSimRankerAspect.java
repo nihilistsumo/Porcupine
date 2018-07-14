@@ -103,34 +103,34 @@ public class ParaSimRankerAspect {
 				}
 				p++;
 				System.out.println(pageID+" is complete. "+(pageParaMap.keySet().size()-p)+" pages remaining...");
-				System.out.println("Feature scores calculated.\nWriting run file...");
-				
-				for(String pageAndKey:scoresMap.keySet()) {
-					HashMap<String, HashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
-					HashMap<String, Double> maxScores = this.getMaxScores(scoreMap, features);
-					String page = pageAndKey.split("_")[0];
-					String keyPara = pageAndKey.split("_")[1];
-					for(String retPara:scoreMap.keySet()) {
-						HashMap<String, Double> scores = scoreMap.get(retPara);
-						double score = 0;
-						String rfLine = "";
-						String[] featureArr = features.split(":");
-						for(int f=0; f<featureArr.length; f++) {
-							double fetScore = scores.get(featureArr[f]);
-							if(maxScores.get(featureArr[f])>0.00000001)
-								fetScore = fetScore/maxScores.get(featureArr[f]);
-							score = score+fetScore*optW[f];
-						}
-						rfLine = page+":"+keyPara+" Q0 "+retPara+" 0 "+score+" ASP-COMBINED";
-						bw.write(rfLine+"\n");
-					}
-				}
-				bw.close();
-				System.out.println("Run file written in "+outRunPath);
 			}
 		}
-		//System.out.println("Total no. of queries: "+allQueries.size());
+		System.out.println("Feature scores calculated.\nWriting run file...");
+		
+		
+		for(String pageAndKey:scoresMap.keySet()) {
+			HashMap<String, HashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
+			HashMap<String, Double> maxScores = this.getMaxScores(scoreMap, features);
+			String page = pageAndKey.split("_")[0];
+			String keyPara = pageAndKey.split("_")[1];
+			for(String retPara:scoreMap.keySet()) {
+				HashMap<String, Double> scores = scoreMap.get(retPara);
+				double score = 0;
+				String rfLine = "";
+				String[] featureArr = features.split(":");
+				for(int f=0; f<featureArr.length; f++) {
+					double fetScore = scores.get(featureArr[f]);
+					if(maxScores.get(featureArr[f])>0.00000001)
+						fetScore = fetScore/maxScores.get(featureArr[f]);
+					score = score+fetScore*optW[f];
+				}
+				rfLine = page+":"+keyPara+" Q0 "+retPara+" 0 "+score+" ASP-COMBINED";
+				bw.write(rfLine+"\n");
+			}
+		}
 		bw.close();
+		System.out.println("Run file written in "+outRunPath);
+		//System.out.println("Total no. of queries: "+allQueries.size());
 	}
 	
 	public HashMap<String, Double> getMaxScores(HashMap<String, HashMap<String, Double>> scoreMap, String features) {

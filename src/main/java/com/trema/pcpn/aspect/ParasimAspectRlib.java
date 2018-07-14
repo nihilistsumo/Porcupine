@@ -215,10 +215,15 @@ public class ParasimAspectRlib {
 			tinySet.add("Chocolate%20chip");
 			tinySet.add("Contingent%20work");
 			
+			System.out.println("Starting training...");
 			//this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
 			//this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			System.out.println("Training complete\n");
+			
+			System.out.println("Startig ranking using trained models...");
 			this.rank(prop, titlesSet2, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set2-run", fetFileOutputDir+"/train1-fet-model", con, withTruePagePara, retAspNo);
 			this.rank(prop, titlesSet1, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set1-run", fetFileOutputDir+"/train2-fet-model", con, withTruePagePara, retAspNo);
+			System.out.println("Ranking complete\n");
 			//java -jar ~/Softwares/RankLib-2.1-patched.jar -train parasim-rlib-fet-part -ranker 4 -metric2t MAP -save parasim-rlib-fet-part-model
 			
 		} catch (IOException | ClassNotFoundException | SQLException e) {
