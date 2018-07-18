@@ -108,17 +108,19 @@ public class PorcupineRunner {
 				String indexDir = args[1];
 				String indexDirNoStops = args[2];
 				String candRun = args[3];
-				String outRun = args[4];
-				String method = args[5];
-				int retNo = Integer.parseInt(args[6]);
-				psrqp.rank(indexDir, indexDirNoStops, candRun, outRun, method, retNo);
+				String articleQrelsPath = args[4];
+				String outRun = args[5];
+				String method = args[6];
+				String withTruePagePara = args[7];
+				psrqp.rank(indexDir, indexDirNoStops, candRun, articleQrelsPath, outRun, method, withTruePagePara);
 			}
 			else if(args[0].equalsIgnoreCase("rrand")) {
 				ParaSimRankerRand psrr = new ParaSimRankerRand();
 				String candRunFilePath = args[1];
-				String runFileOut = args[2];
-				int retNo = Integer.parseInt(args[3]);
-				psrr.rank(candRunFilePath, runFileOut, retNo);
+				String articleQrelsPath = args[2];
+				String runFileOut = args[3];
+				String withTruePagePara = args[4];
+				psrr.rank(candRunFilePath, articleQrelsPath, runFileOut, withTruePagePara);
 			}
 			else if(args[0].equalsIgnoreCase("san")) {
 				ParaSimSanityCheck san = new ParaSimSanityCheck();

@@ -102,7 +102,7 @@ public class ParaSimRankerAspect {
 					e.printStackTrace();
 				}
 				p++;
-				System.out.println(pageID+" is complete. "+(pageParaMap.keySet().size()-p)+" pages remaining...");
+				System.out.println(pageID+" is complete. "+(titlesSet.size()-p)+" pages remaining...");
 			}
 		}
 		System.out.println("Feature scores calculated.\nWriting run file...");

@@ -211,13 +211,15 @@ public class ParasimAspectRlib {
 			if(withTruePagePara.equalsIgnoreCase("true"))
 				truePagePara = true;
 			
+			/*
 			HashSet<String> tinySet = new HashSet<String>();
 			tinySet.add("Chocolate%20chip");
 			tinySet.add("Contingent%20work");
+			*/
 			
 			System.out.println("Starting training...");
-			//this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
-			//this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
 			System.out.println("Training complete\n");
 			
 			System.out.println("Startig ranking using trained models...");

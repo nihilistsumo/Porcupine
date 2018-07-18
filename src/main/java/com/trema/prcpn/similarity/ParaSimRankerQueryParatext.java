@@ -34,7 +34,7 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class ParaSimRankerQueryParatext {
 	
-	public void rank(String indexDirPath, String indexDirNoStops, String candRunFilePath, String outRunPath, String method, int retNo) throws IOException {
+	public void rank(String indexDirPath, String indexDirNoStops, String candRunFilePath, String articleQrelsPath, String outRunPath, String method, String withTruePagePara) throws IOException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
 		if(method.equalsIgnoreCase("bm25"))
@@ -47,37 +47,54 @@ public class ParaSimRankerQueryParatext {
 			is.setSimilarity(new LMDirichletSimilarity());
 		ArrayList<String> allQueries = new ArrayList<String>();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outRunPath)));
-		HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(candRunFilePath);
+		HashMap<String, ArrayList<String>> candPageParaMap = DataUtilities.getPageParaMapFromRunfile(candRunFilePath);
+		HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(articleQrelsPath);
+		HashMap<String, ArrayList<String>> pageParaMap = candPageParaMap;
+		if(withTruePagePara.equalsIgnoreCase("true"))
+			pageParaMap = truePageParaMap;
 		for(String pageID:pageParaMap.keySet()) {
-			ArrayList<String> queryParaIDs = pageParaMap.get(pageID);
-			StreamSupport.stream(queryParaIDs.spliterator(), true).forEach(keyPara -> { 
-				try {
-					QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
-					QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
-					HashMap<String, Float> retrievedResult = new HashMap<String, Float>();
-					String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
-					BooleanQuery.setMaxClauseCount(65536);
-					Query q = qp.parse(QueryParser.escape(queryString));
-					TopDocs tds = is.search(q, retNo*5);
-					ScoreDoc[] retDocs = tds.scoreDocs;
-					int count = 0;
-					for (int i = 0; i < retDocs.length; i++) {
-						Document d = is.doc(retDocs[i].doc);
-						String retParaID = d.getField("paraid").stringValue();
-						if(!retParaID.equals(keyPara) && queryParaIDs.contains(retParaID)) {
-							retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
-							count++;
+			ArrayList<String> retParaIDs = pageParaMap.get(pageID);
+			StreamSupport.stream(retParaIDs.spliterator(), true).forEach(keyPara -> { 
+				if(truePageParaMap.get(pageID).contains(keyPara)) {
+					try {
+						QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+						QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
+						HashMap<String, Double> retrievedResult = new HashMap<String, Double>();
+						String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+						BooleanQuery.setMaxClauseCount(65536);
+						Query q = qp.parse(QueryParser.escape(queryString));
+						for(String retPara:retParaIDs) {
+							if(!retPara.equals(keyPara)) {
+								int retDocID = isNoStops.search(qpID.parse(retPara), 1).scoreDocs[0].doc;
+								double currScore = is.explain(q, retDocID).getValue();
+								retrievedResult.put(retPara, currScore);
+							}
 						}
-						if(count>=retNo)
-							break;
+						
+						/*
+						TopDocs tds = is.search(q, retNo*5);
+						ScoreDoc[] retDocs = tds.scoreDocs;
+						int count = 0;
+						for (int i = 0; i < retDocs.length; i++) {
+							Document d = is.doc(retDocs[i].doc);
+							String retParaID = d.getField("paraid").stringValue();
+							if(!retParaID.equals(keyPara) && retParaIDs.contains(retParaID)) {
+								retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
+								count++;
+							}
+							if(count>=retNo)
+								break;
+						}
+						*/
+						
+						for(String para:retrievedResult.keySet()) {
+							bw.write(pageID+":"+keyPara+" Q0 "+para+" 0 "+retrievedResult.get(para)+" "+method.toUpperCase()+"-MAP\n");
+						}
+						System.out.print(".");
+					} catch (IOException | ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					for(String para:retrievedResult.keySet()) {
-						bw.write(pageID+":"+keyPara+" Q0 "+para+" 0 "+retrievedResult.get(para)+" "+method.toUpperCase()+"-MAP\n");
-					}
-					System.out.print("Done Para: "+keyPara+"\r");
-				} catch (IOException | ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			});
 			System.out.println();
