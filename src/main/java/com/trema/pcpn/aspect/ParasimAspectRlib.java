@@ -55,7 +55,7 @@ public class ParasimAspectRlib {
 		return splitSets;
 	}
 	
-	public void writeRlibFetFileForTrain(HashMap<String, ArrayList<String>> trainCandSet, HashMap<String, ArrayList<String>> parasimQrels, String fetFileOutputPath, Connection con, 
+	public void writeRlibFetFileForTrain(HashMap<String, ArrayList<String>> trainCandSet, HashMap<String, ArrayList<String>> truePagePara, HashMap<String, ArrayList<String>> parasimQrels, String fetFileOutputPath, Connection con, 
 			IndexSearcher aspectIs, IndexSearcher is, IndexSearcher isNoStops, int retAspNo, String features) {
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fetFileOutputPath)));
@@ -64,7 +64,11 @@ public class ParasimAspectRlib {
 			System.out.println("Calculating feature scores...");
 			int p = 0;
 			for(String page:trainCandSet.keySet()) {
-				ArrayList<String> retParaList = trainCandSet.get(page);
+				ArrayList<String> retParaList = new ArrayList<String>();
+				for(String para:trainCandSet.get(page)) {
+					if(truePagePara.get(page).contains(para))
+						retParaList.add(para);
+				}
 				HashMap<String, TopDocs> paraAspectMap = new HashMap<String, TopDocs>();
 				System.out.print("Retrieving aspects for "+retParaList.size()+" paras in "+page);
 				StreamSupport.stream(retParaList.spliterator(), true).forEach(para -> {
@@ -167,7 +171,7 @@ public class ParasimAspectRlib {
 			}
 		}
 		HashMap<String, ArrayList<String>> paraSimQrels = DataUtilities.getGTMapQrels(paraSimQrelsPath);
-		this.writeRlibFetFileForTrain(trainPageParaMap, paraSimQrels, fetFileOutputPath, con, aspectIs, is, isNoStops, retAspNo, features);
+		this.writeRlibFetFileForTrain(trainPageParaMap, truePageParaMap, paraSimQrels, fetFileOutputPath, con, aspectIs, is, isNoStops, retAspNo, features);
 		
 		try {
 			String command = "java -jar "+rlibPath+" -train "+fetFileOutputPath+" -ranker 4 -metric2t MAP -save "+fetFileOutputPath+"-model";
