@@ -175,7 +175,7 @@ public class PorcupineRunner {
 			else if(args[0].equalsIgnoreCase("split")) {
 				TwoFoldRunfileSplit split = new TwoFoldRunfileSplit();
 				String runfilesDir = args[1];
-				String titlesPath = args[2];
+				String titlesPath = args[2]; 
 				String outputDir1 = args[3];
 				String outputDir2 = args[4];
 				split.startProcess(runfilesDir, titlesPath, outputDir1, outputDir2);
