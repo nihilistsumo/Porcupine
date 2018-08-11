@@ -14,30 +14,17 @@ import java.util.Properties;
 
 public class ParaSimQrelsWriter {
 	
-	Properties p;
+	String inputQrels;
 	String qrelsFilename;
-	String mode;
 	
-	public ParaSimQrelsWriter(Properties prop, String outfile, String m){
-		this.p = prop;
+	public ParaSimQrelsWriter(String infile, String outfile){
+		this.inputQrels = infile;
 		this.qrelsFilename = outfile;
-		this.mode = m;
 	}
 	
 	public void printQrels() throws IOException{
 		HashMap<String, ArrayList<String>> inputQrels = new HashMap<String, ArrayList<String>>();
-		String inputPath = "";
-		switch(this.mode){
-		case "art":
-			inputPath = this.p.getProperty("data-dir")+"/"+this.p.getProperty("art-qrels");
-			break;
-		case "top":
-			inputPath = this.p.getProperty("data-dir")+"/"+this.p.getProperty("top-qrels");
-			break;
-		case "hier":
-			inputPath = this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels");
-			break;
-		}
+		String inputPath = this.inputQrels;
 		BufferedReader br = new BufferedReader(new FileReader(new File(inputPath)));
 		String line = br.readLine();
 		String q,para;
@@ -84,10 +71,11 @@ public class ParaSimQrelsWriter {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Properties prop = new Properties();
 		try {
-			prop.load(new FileInputStream(new File("project.properties")));
-			ParaSimQrelsWriter pw = new ParaSimQrelsWriter(prop, "/home/sumanta/Documents/Porcupine-data/Porcupine-results/qrels/simpara-train-art-for-cluster.qrels", "art");
+			String inputPath = args[0];
+			String outputPath = args[1];
+			//ParaSimQrelsWriter pw = new ParaSimQrelsWriter(prop, "/home/sumanta/Documents/Porcupine-data/Porcupine-results/qrels/fold-4-simpara-train-tree-for-cluster.qrels", "tree");
+			ParaSimQrelsWriter pw = new ParaSimQrelsWriter(inputPath, outputPath);
 			pw.printQrels();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
