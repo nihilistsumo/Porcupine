@@ -32,7 +32,7 @@ import com.trema.pcpn.util.DataUtilities;
 
 public class AspectSimilarity {
 	
-	public void insertEntitiesInDB(String paraEntitiesFile, Connection con) {
+	public void insertEntitiesInDB(String paraEntitiesFile, String table, Connection con) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(new File(paraEntitiesFile)));
 			String line = br.readLine();
@@ -42,12 +42,12 @@ public class AspectSimilarity {
 				String[] elements = line.split("\t");
 				if(elements.length>1) {
 					String paraID = elements[0];
-					PreparedStatement preparedStatement = con.prepareStatement("select * from paraent where paraid = ?");
+					PreparedStatement preparedStatement = con.prepareStatement("select * from "+table+" where paraid = ?");
 					preparedStatement.setString(1, paraID);
 					ResultSet resultSet = preparedStatement.executeQuery();
 					if(!resultSet.next()) {
 						String entString = elements[1];
-						preparedStatement = con.prepareStatement("insert into paraent values (?,?)");
+						preparedStatement = con.prepareStatement("insert into "+table+" values (?,?)");
 						preparedStatement.setString(1, paraID);
 						preparedStatement.setString(2, entString);
 						try {

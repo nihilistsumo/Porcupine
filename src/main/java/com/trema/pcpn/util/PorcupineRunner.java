@@ -156,7 +156,7 @@ public class PorcupineRunner {
 				String pwd = args[6];
 				String paraEntFile = args[7];
 				if(option.equalsIgnoreCase("d")) {
-					asp.insertEntitiesInDB(paraEntFile, DataUtilities.getDBConnection(ip, db, table, user, pwd));
+					asp.insertEntitiesInDB(paraEntFile, table, DataUtilities.getDBConnection(ip, db, table, user, pwd));
 				}
 			}
 			else if(args[0].equalsIgnoreCase("aspent")) {
@@ -206,9 +206,9 @@ public class PorcupineRunner {
 			else if(args[0].equalsIgnoreCase("asptruerun")) {
 				//Properties prop, String artQrelsPath, String isPath, String isNoStopPath, String aspIsPath, int retAspNo, String outputDirPath
 				String artQrelsPath = args[1];
-				String isPath = args[2]; 
-				String isNoStopPath = args[3];
-				String aspIsPath = args[4];
+				String isPath = args[2]; // paragraphCorpus
+				String isNoStopPath = args[3]; // paragraphCorpus
+				String aspIsPath = args[4]; // allButBenchmark
 				int retAspNo = Integer.parseInt(args[5]);
 				String outputDirPath = args[6];
 				ParasimAspectRunfileWriter rfWriter = new ParasimAspectRunfileWriter();
