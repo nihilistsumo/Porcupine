@@ -44,7 +44,7 @@ public class AspectRelationDebug {
 			SubsampleForRlib sampler = new SubsampleForRlib();
 			HashMap<String, ArrayList<String>> sample = sampler.subSample(topQrelsPath, artQrelsPath);
 			ILexicalDatabase db = new NictWordNet();
-			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
+			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), prop.getProperty("dbtable"), prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 			AspectSimilarity aspSim = new AspectSimilarity();
 			for(String keyPara:sample.keySet()) {
 				String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
@@ -76,9 +76,9 @@ public class AspectRelationDebug {
 					System.out.println(rel+" para "+retPara+" Aspects:");
 					//this.printAspects(retPara, retAspectsRetPara.scoreDocs, aspectIs, con);
 					
-					double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na");
+					double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", prop.getProperty("dbtable"));
 					double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
-					double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na");
+					double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", prop.getProperty("dbtable"));
 					System.out.println("\nAspect relation score = "+aspScore[0]);
 					System.out.println("Aspect text score = "+aspScore[1]);
 					System.out.println("Aspect lead score = "+aspScore[2]);
@@ -92,7 +92,7 @@ public class AspectRelationDebug {
 		}
 	}
 	
-	public void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, Connection con) {
+	public void printAspects(String paraID, ScoreDoc[] aspects, IndexSearcher aspectIs, Connection con, String table) {
 		AspectSimilarity aspSim = new AspectSimilarity();
 		int rank = 1;
 		System.out.println("Retrieved aspects");
@@ -107,7 +107,7 @@ public class AspectRelationDebug {
 				//String text = aspDoc.getField("Text").stringValue();
 				//String title = aspDoc.getField("Title").stringValue();
 				
-				String[] entitiesInAsp = aspSim.retrieveEntitiesFromAspParas(aspParas, con);
+				String[] entitiesInAsp = aspSim.retrieveEntitiesFromAspParas(aspParas, con, table);
 				//System.out.println(rank+". ID: "+id+"\nHeading: "+heading+"\nTitle: "+title+"\nLead Text: "+leadText+"\n\nText: "+text+"\n");
 				System.out.println(rank+". Aspect ID: "+id);
 				for(String ent:entitiesInAsp) {

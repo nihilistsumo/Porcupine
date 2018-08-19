@@ -104,13 +104,13 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaEntity(String keyPara, ArrayList<String> retParas, Connection con, HashMap<String, String> qrels, String printEntities) {
+	public String retrieveParaEntity(String keyPara, ArrayList<String> retParas, Connection con, HashMap<String, String> qrels, String printEntities, String table) {
 		Random rand = new Random();
 		AspectSimilarity aspSim = new AspectSimilarity();
 		String topRet = "";
 		double topScore = 0;
 		for(String ret:retParas) {
-			double currScore = aspSim.entityMatchRatio(keyPara, ret, con, printEntities);
+			double currScore = aspSim.entityMatchRatio(keyPara, ret, con, printEntities, table);
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
@@ -173,7 +173,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspectAndEntity(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException {
+	public String retrieveParaAspectAndEntity(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects, String table) throws IOException, ParseException, SQLException {
 		Random rand = new Random();
 		
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
@@ -203,7 +203,7 @@ public class ParaSimSanityCheck {
 			q = qpAspText.parse(QueryParser.escape(queryString));
 			ScoreDoc[] retAspectsRetPara = aspectIs.search(q, retAspNo).scoreDocs;
 			
-			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara)+aspSim.entityMatchRatio(keyPara, ret, con, printAspects);
+			double currScore = aspSim.aspectMatchRatio(retAspectsKeyPara, retAspectsRetPara)+aspSim.entityMatchRatio(keyPara, ret, con, printAspects, table);
 			//double currScore = aspSim.aspectEntityRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "default");
 			if(printAspects.equalsIgnoreCase("print")) {
 				System.out.println("Para ID: "+ret);
@@ -223,7 +223,7 @@ public class ParaSimSanityCheck {
 		return topRet;
 	}
 	
-	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects) throws IOException, ParseException, SQLException, InterruptedException {
+	public String retrieveParaAspectRelation(String keyPara, ArrayList<String> retParas, IndexSearcher is, IndexSearcher isNoStops, IndexSearcher aspectIs, Connection con, HashMap<String, String> qrels, int retAspNo, String printAspects, String table) throws IOException, ParseException, SQLException, InterruptedException {
 		Random rand = new Random();
 		System.out.println("\nKey: "+keyPara);
 		QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
@@ -261,9 +261,9 @@ public class ParaSimSanityCheck {
 				System.out.println("\n\n");
 			}
 			
-			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, printAspects)[1]
+			double currScore = (aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, printAspects, table)[1]
 					+aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs)
-					+aspSim.entityMatchRatio(keyPara, ret, con, printAspects))/3;
+					+aspSim.entityMatchRatio(keyPara, ret, con, printAspects, table))/3;
 			if(currScore>topScore) {
 				topRet = ret;
 				topScore = currScore;
@@ -347,7 +347,7 @@ public class ParaSimSanityCheck {
 			}
 		}
 		ILexicalDatabase db = new NictWordNet();
-		Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
+		Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), prop.getProperty("dbtable"), prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 		// loop code
 		for(String method:methods.split(":")) {
 			HashMap<String, String> sampleRet1 = new HashMap<String, String>();
@@ -402,13 +402,13 @@ public class ParaSimSanityCheck {
 						sampleRet1.put(keyPara, this.retrieveParaAspect(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
 					}
 					else if(method.equals("ent")) {
-						sampleRet1.put(keyPara, this.retrieveParaEntity(keyPara, retParas, con, sampleQrels1, print));
+						sampleRet1.put(keyPara, this.retrieveParaEntity(keyPara, retParas, con, sampleQrels1, print, prop.getProperty("dbtable")));
 					}
 					else if(method.equals("aspent")) {
-						sampleRet1.put(keyPara, this.retrieveParaAspectAndEntity(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
+						sampleRet1.put(keyPara, this.retrieveParaAspectAndEntity(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print, prop.getProperty("dbtable")));
 					}
 					else if(method.equals("asprel")) {
-						sampleRet1.put(keyPara, this.retrieveParaAspectRelation(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print));
+						sampleRet1.put(keyPara, this.retrieveParaAspectRelation(keyPara, retParas, is, isNoStops, aspectIs, con, sampleQrels1, retAspNo, print, prop.getProperty("dbtable")));
 					}
 				} catch (IOException | ParseException | SQLException | InterruptedException e) {
 					// TODO Auto-generated catch block

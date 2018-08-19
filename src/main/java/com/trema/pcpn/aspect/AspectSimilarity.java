@@ -136,7 +136,7 @@ public class AspectSimilarity {
 	*/
 	
 	// returned is a double array: [normalized ent sim, norm txt sim, norm lead sim]
-	public double[] aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String print) throws IOException, ParseException, SQLException, InterruptedException {
+	public double[] aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String print, String table) throws IOException, ParseException, SQLException, InterruptedException {
 		double[] score = new double[3];
 		int count = keyAspects.scoreDocs.length*retAspects.scoreDocs.length;
 		ExecutorService exec = Executors.newCachedThreadPool();
@@ -144,7 +144,7 @@ public class AspectSimilarity {
 		int i = 0;
 		for(ScoreDoc keyDoc:keyAspects.scoreDocs) {
 			for(ScoreDoc retDoc:retAspects.scoreDocs) {
-				Runnable aspectCalcThread = new AspectRelationCalculationThread(keyDoc, retDoc, keyAspects.getMaxScore(), retAspects.getMaxScore(), is, aspIs, con, individualScores, i);
+				Runnable aspectCalcThread = new AspectRelationCalculationThread(keyDoc, retDoc, keyAspects.getMaxScore(), retAspects.getMaxScore(), is, aspIs, con, individualScores, i, table);
 				exec.execute(aspectCalcThread);
 				i++;
 			}
@@ -164,7 +164,7 @@ public class AspectSimilarity {
 	
 	public class AspectRelationCalculationThread implements Runnable {
 		
-		public AspectRelationCalculationThread(ScoreDoc keyDoc, ScoreDoc retDoc, float keyMaxScore, float retMaxScore, IndexSearcher is, IndexSearcher aspIs, Connection con, double[][] score, int index) {
+		public AspectRelationCalculationThread(ScoreDoc keyDoc, ScoreDoc retDoc, float keyMaxScore, float retMaxScore, IndexSearcher is, IndexSearcher aspIs, Connection con, double[][] score, int index, String table) {
 			// TODO Auto-generated constructor stub
 			try {
 				Document keyAspDoc = aspIs.doc(keyDoc.doc);
@@ -173,8 +173,8 @@ public class AspectSimilarity {
 				String keyAspParas = keyAspDoc.getField("ParasInSection").stringValue();
 				Document retAspDoc = aspIs.doc(retDoc.doc);
 				String retAspParas = retAspDoc.getField("ParasInSection").stringValue();
-				String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con);
-				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con);
+				String[] keyAspEntities = this.retrieveEntitiesFromAspParas(keyAspParas, con, table);
+				String[] retAspEntities = this.retrieveEntitiesFromAspParas(retAspParas, con, table);
 				QueryParser qpLead = new QueryParser("LeadText", new StandardAnalyzer());
 				QueryParser qpText = new QueryParser("Text", new StandardAnalyzer());
 				Query qt = qpText.parse(QueryParser.escape(keyText));
@@ -199,11 +199,11 @@ public class AspectSimilarity {
 			}
 		}
 		
-		public String[] retrieveEntitiesFromAspParas(String paras, Connection con) {
+		public String[] retrieveEntitiesFromAspParas(String paras, Connection con, String table) {
 			String ent = "";
 			for(String paraID:paras.split(" ")) {
 				try {
-					PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+					PreparedStatement preparedStatement = con.prepareStatement("select ent from "+table+" where paraid = ?");
 					preparedStatement.setString(1, paraID);
 					ResultSet resultSet = preparedStatement.executeQuery();
 					if(resultSet.next())
@@ -236,7 +236,7 @@ public class AspectSimilarity {
 		
 	}
 	
-	public String[] retrieveEntitiesFromAspText(String aspText, IndexSearcher is, Connection con) throws ParseException, IOException, SQLException {
+	public String[] retrieveEntitiesFromAspText(String aspText, IndexSearcher is, Connection con, String table) throws ParseException, IOException, SQLException {
 		String ent = "";
 		String[] aspParas = aspText.split("\n\n\n")[0].split("\n");
 		QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
@@ -250,7 +250,7 @@ public class AspectSimilarity {
 				String paraText = paraDoc.get("parabody");
 				if(paraText.equalsIgnoreCase(aspPara)) {
 					String paraID = paraDoc.get("paraid");
-					PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+					PreparedStatement preparedStatement = con.prepareStatement("select ent from "+table+" where paraid = ?");
 					preparedStatement.setString(1, paraID);
 					ResultSet resultSet = preparedStatement.executeQuery();
 					if(resultSet.next())
@@ -262,11 +262,11 @@ public class AspectSimilarity {
 		return ent.trim().split(" ");
 	}
 	
-	public String[] retrieveEntitiesFromAspParas(String paras, Connection con) {
+	public String[] retrieveEntitiesFromAspParas(String paras, Connection con, String table) {
 		String ent = "";
 		for(String paraID:paras.split(" ")) {
 			try {
-				PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+				PreparedStatement preparedStatement = con.prepareStatement("select ent from "+table+" where paraid = ?");
 				preparedStatement.setString(1, paraID);
 				ResultSet resultSet = preparedStatement.executeQuery();
 				if(resultSet.next())
@@ -302,11 +302,11 @@ public class AspectSimilarity {
 		return (double)match/keyAspects.length;
 	}
 	
-	public double entityMatchRatio(String paraID1, String paraID2, Connection con, String print) {
+	public double entityMatchRatio(String paraID1, String paraID2, Connection con, String print, String table) {
 		ArrayList<String> commonEntities = new ArrayList<String>();
 		double ratio = 0.0;
 		try {
-			PreparedStatement preparedStatement = con.prepareStatement("select ent from paraent where paraid = ?");
+			PreparedStatement preparedStatement = con.prepareStatement("select ent from "+table+" where paraid = ?");
 			preparedStatement.setString(1, paraID1);
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(!resultSet.next()) {

@@ -39,7 +39,7 @@ import com.trema.pcpn.util.DataUtilities;
 public class ParaSimRankerAspect {
 	
 	public void rank(Properties prop, HashSet<String> titlesSet, String indexDirPath, String indexDirNoStops, String indexDirAspect, String candRunFilePath, 
-			String articleQrelsPath, String outRunPath, String rlibModelPath, Connection con, String method, int retAspNo) throws IOException {
+			String articleQrelsPath, String outRunPath, String rlibModelPath, Connection con, String method, int retAspNo, String table) throws IOException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
 		IndexSearcher isAsp = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirAspect).toPath()))));
@@ -88,7 +88,8 @@ public class ParaSimRankerAspect {
 							ExecutorService exec = Executors.newCachedThreadPool();
 							for(String retPara:retParaIDs) {
 								if(!keyPara.equals(retPara)) {
-									Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, isAsp, is, isNoStops, retAspNo, pageID, scoresMap);
+									Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, 
+											isAsp, is, isNoStops, retAspNo, pageID, scoresMap, table);
 									exec.execute(parasimThread);
 								}
 							}

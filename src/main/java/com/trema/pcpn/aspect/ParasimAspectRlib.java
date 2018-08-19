@@ -56,7 +56,7 @@ public class ParasimAspectRlib {
 	}
 	
 	public void writeRlibFetFileForTrain(HashMap<String, ArrayList<String>> trainCandSet, HashMap<String, ArrayList<String>> truePagePara, HashMap<String, ArrayList<String>> parasimQrels, String fetFileOutputPath, Connection con, 
-			IndexSearcher aspectIs, IndexSearcher is, IndexSearcher isNoStops, int retAspNo, String features) {
+			IndexSearcher aspectIs, IndexSearcher is, IndexSearcher isNoStops, int retAspNo, String features, String table) {
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fetFileOutputPath)));
 			
@@ -94,7 +94,7 @@ public class ParasimAspectRlib {
 					ExecutorService exec = Executors.newCachedThreadPool();
 					for(int j=i+1; j<retParaList.size(); j++) {
 						String retPara = retParaList.get(j);
-						Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, aspectIs, is, isNoStops, retAspNo, page, scoresMap);
+						Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, aspectIs, is, isNoStops, retAspNo, page, scoresMap, table);
 						exec.execute(parasimThread);
 					}
 					exec.shutdown();
@@ -156,7 +156,7 @@ public class ParasimAspectRlib {
 	}
 	
 	public void train(HashSet<String> trainTitles, String candSetRunFilePath, String artQrelsPath, String paraSimQrelsPath, String fetFileOutputPath, Connection con, IndexSearcher aspectIs, 
-			IndexSearcher is, IndexSearcher isNoStops, String rlibPath, int retAspNo, String features, boolean withTruePagePara) {
+			IndexSearcher is, IndexSearcher isNoStops, String rlibPath, int retAspNo, String features, boolean withTruePagePara, String table) {
 		HashMap<String, ArrayList<String>> trainPageParaMap = new HashMap<String, ArrayList<String>>();
 		HashMap<String, ArrayList<String>> candPageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetRunFilePath);
 		HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(artQrelsPath);
@@ -171,7 +171,7 @@ public class ParasimAspectRlib {
 			}
 		}
 		HashMap<String, ArrayList<String>> paraSimQrels = DataUtilities.getGTMapQrels(paraSimQrelsPath);
-		this.writeRlibFetFileForTrain(trainPageParaMap, truePageParaMap, paraSimQrels, fetFileOutputPath, con, aspectIs, is, isNoStops, retAspNo, features);
+		this.writeRlibFetFileForTrain(trainPageParaMap, truePageParaMap, paraSimQrels, fetFileOutputPath, con, aspectIs, is, isNoStops, retAspNo, features, table);
 		
 		try {
 			String command = "java -jar "+rlibPath+" -train "+fetFileOutputPath+" -ranker 4 -metric2t MAP -save "+fetFileOutputPath+"-model";
@@ -190,10 +190,10 @@ public class ParasimAspectRlib {
 	}
 	
 	public void rank(Properties prop, HashSet<String> titlesSet, String indexDirPath, String indexDirNoStops, String indexDirAspect, String candRunFilePath, 
-			String articleQrelsPath, String outRunPath, String rlibModelPath, Connection con, String method, int retAspNo) {
+			String articleQrelsPath, String outRunPath, String rlibModelPath, Connection con, String method, int retAspNo, String table) {
 		try {
 			ParaSimRankerAspect aspectRanker = new ParaSimRankerAspect();
-			aspectRanker.rank(prop, titlesSet, indexDirPath, indexDirNoStops, indexDirAspect, candRunFilePath, articleQrelsPath, outRunPath, rlibModelPath, con, method, retAspNo);
+			aspectRanker.rank(prop, titlesSet, indexDirPath, indexDirNoStops, indexDirAspect, candRunFilePath, articleQrelsPath, outRunPath, rlibModelPath, con, method, retAspNo, table);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -210,7 +210,7 @@ public class ParasimAspectRlib {
 			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isPath).toPath()))));
 			IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isNoStopPath).toPath()))));
 			IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(aspIsPath).toPath()))));
-			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), "paraent", prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
+			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), prop.getProperty("dbtable"), prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 			boolean truePagePara = false;
 			if(withTruePagePara.equalsIgnoreCase("true"))
 				truePagePara = true;
@@ -222,13 +222,13 @@ public class ParasimAspectRlib {
 			*/
 			
 			System.out.println("Starting training...");
-			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
-			this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara);
+			this.train(titlesSet1, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train1-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara, prop.getProperty("dbtable"));
+			this.train(titlesSet2, candSetRunFilePath, artQrelsPath, paraSimQrelsPath, fetFileOutputDir+"/train2-fet", con, aspectIs, is, isNoStops, rlibPath, retAspNo, features, truePagePara, prop.getProperty("dbtable"));
 			System.out.println("Training complete\n");
 			
 			System.out.println("Startig ranking using trained models...");
-			this.rank(prop, titlesSet2, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set2-run", fetFileOutputDir+"/train1-fet-model", con, withTruePagePara, retAspNo);
-			this.rank(prop, titlesSet1, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set1-run", fetFileOutputDir+"/train2-fet-model", con, withTruePagePara, retAspNo);
+			this.rank(prop, titlesSet2, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set2-run", fetFileOutputDir+"/train1-fet-model", con, withTruePagePara, retAspNo, prop.getProperty("dbtable"));
+			this.rank(prop, titlesSet1, isPath, isNoStopPath, aspIsPath, candSetRunFilePath, artQrelsPath, fetFileOutputDir+"/set1-run", fetFileOutputDir+"/train2-fet-model", con, withTruePagePara, retAspNo, prop.getProperty("dbtable"));
 			System.out.println("Ranking complete\n");
 			//java -jar ~/Softwares/RankLib-2.1-patched.jar -train parasim-rlib-fet-part -ranker 4 -metric2t MAP -save parasim-rlib-fet-part-model
 			

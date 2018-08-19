@@ -17,16 +17,16 @@ import org.apache.lucene.search.TopDocs;
 public class ParasimAspectSimJob implements Runnable {
 	
 	public ParasimAspectSimJob(String keyPara, String retPara, HashMap<String, TopDocs> paraAspects, Connection con, IndexSearcher aspectIs, IndexSearcher is, IndexSearcher isNoStops, 
-			int retAspNo, String pageID, HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap) {
+			int retAspNo, String pageID, HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap, String table) {
 		// TODO Auto-generated constructor stub
 		try {
 			TopDocs retAspectsKeyPara = paraAspects.get(keyPara);
 			TopDocs retAspectsRetPara = paraAspects.get(retPara);
 
 			AspectSimilarity aspSim = new AspectSimilarity();
-			double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na");
+			double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", table);
 			double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
-			double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na");
+			double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", table);
 
 			HashMap<String, Double> featureScores = new HashMap<String, Double>();
 			featureScores.put("asprel", aspScore[0]);
