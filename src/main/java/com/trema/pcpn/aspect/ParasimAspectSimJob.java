@@ -20,29 +20,41 @@ public class ParasimAspectSimJob implements Runnable {
 			int retAspNo, String pageID, HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap, String table) {
 		// TODO Auto-generated constructor stub
 		try {
-			TopDocs retAspectsKeyPara = paraAspects.get(keyPara);
-			TopDocs retAspectsRetPara = paraAspects.get(retPara);
-
-			AspectSimilarity aspSim = new AspectSimilarity();
-			double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", table);
-			double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
-			double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", table);
-
-			HashMap<String, Double> featureScores = new HashMap<String, Double>();
-			featureScores.put("asprel", aspScore[0]);
-			featureScores.put("asptext", aspScore[1]);
-			featureScores.put("asplead", aspScore[2]);
-			featureScores.put("aspmatch", aspectMatchRatio);
-			featureScores.put("entmatch", entMatchRatio);
-
-			if(!scoresMap.containsKey(pageID+"_"+keyPara)) {
-				HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
-				retParaScores.put(retPara, featureScores);
-				scoresMap.put(pageID+"_"+keyPara, retParaScores);
+			if(scoresMap.containsKey(pageID+"_"+retPara) && scoresMap.get(pageID+"_"+retPara).containsKey(keyPara)) {
+				if(!scoresMap.containsKey(pageID+"_"+keyPara)) {
+					HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
+					retParaScores.put(retPara, scoresMap.get(pageID+"_"+retPara).get(keyPara));
+					scoresMap.put(pageID+"_"+keyPara, retParaScores);
+				}
+				else
+					scoresMap.get(pageID+"_"+keyPara).put(retPara, scoresMap.get(pageID+"_"+retPara).get(keyPara));
+				System.out.print(".");
 			}
-			else
-				scoresMap.get(pageID+"_"+keyPara).put(retPara, featureScores);
-			System.out.print(".");
+			else {
+				TopDocs retAspectsKeyPara = paraAspects.get(keyPara);
+				TopDocs retAspectsRetPara = paraAspects.get(retPara);
+	
+				AspectSimilarity aspSim = new AspectSimilarity();
+				double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", table);
+				double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
+				double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", table);
+	
+				HashMap<String, Double> featureScores = new HashMap<String, Double>();
+				featureScores.put("asprel", aspScore[0]);
+				featureScores.put("asptext", aspScore[1]);
+				featureScores.put("asplead", aspScore[2]);
+				featureScores.put("aspmatch", aspectMatchRatio);
+				featureScores.put("entmatch", entMatchRatio);
+	
+				if(!scoresMap.containsKey(pageID+"_"+keyPara)) {
+					HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
+					retParaScores.put(retPara, featureScores);
+					scoresMap.put(pageID+"_"+keyPara, retParaScores);
+				}
+				else
+					scoresMap.get(pageID+"_"+keyPara).put(retPara, featureScores);
+				System.out.print(".");
+			}
 		} catch (IOException | ParseException | SQLException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

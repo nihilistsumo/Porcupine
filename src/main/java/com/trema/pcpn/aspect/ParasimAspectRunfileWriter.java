@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +26,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
 import com.trema.pcpn.util.DataUtilities;
+import com.trema.pcpn.util.MapUtil;
 
 public class ParasimAspectRunfileWriter {
 	
@@ -81,10 +83,16 @@ public class ParasimAspectRunfileWriter {
 			System.out.println("Producing run files..");
 			for(String query:scoresMap.keySet()) {
 				HashMap<String, HashMap<String, Double>> retScores = scoresMap.get(query);
-				for(String retPara: retScores.keySet()) {
-					for(String fet:aspectFeatures) {
-						writers.get(fet).write(query+" Q0 "+retPara+" 0 "+retScores.get(retPara).get(fet)+" PARASIM-"+fet+"\n");
-					}
+				for(String fet:aspectFeatures) {
+					Map<String, Double> unsortedScores = new HashMap<String, Double>();
+					for(String retPara: retScores.keySet())
+						unsortedScores.put(retPara, retScores.get(retPara).get(fet));
+					Map<String, Double> sortedScores = MapUtil.sortByValue(unsortedScores);
+					int i=1;
+					for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
+						writers.get(fet).write(query+" Q0 "+entry.getKey()+" "+i+" "+entry.getValue()+" PARASIM-"+fet+"\n");
+						i++;
+					}	
 				}
 			}
 			for(String fet:aspectFeatures)
@@ -104,6 +112,26 @@ public class ParasimAspectRunfileWriter {
 			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), prop.getProperty("dbtable"), prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
 			HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(artQrelsPath);
 			this.writeRunFiles(truePageParaMap, outputDirPath, con, aspectIs, is, isNoStops, retAspNo, features, prop.getProperty("dbtable"));
+		} catch (ClassNotFoundException | IOException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void run(Properties prop, String artQrelsPath, String isPath, String isNoStopPath, String aspIsPath, int retAspNo, String outputDirPath, ArrayList<String> onlyThesePages) {
+		try {
+			String features = prop.getProperty("asp-features");
+			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isPath).toPath()))));
+			IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(isNoStopPath).toPath()))));
+			IndexSearcher aspectIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(aspIsPath).toPath()))));
+			Connection con = DataUtilities.getDBConnection(prop.getProperty("dbip"), prop.getProperty("db"), prop.getProperty("dbtable"), prop.getProperty("dbuser"), prop.getProperty("dbpwd"));
+			HashMap<String, ArrayList<String>> truePageParaMap = DataUtilities.getTrueArticleParasMapFromPath(artQrelsPath);
+			HashMap<String, ArrayList<String>> shortPageParaMap = new HashMap<String, ArrayList<String>>();
+			for(String page:truePageParaMap.keySet()) {
+				if(onlyThesePages.contains(page))
+					shortPageParaMap.put(page, truePageParaMap.get(page));
+			}
+			this.writeRunFiles(shortPageParaMap, outputDirPath, con, aspectIs, is, isNoStops, retAspNo, features, prop.getProperty("dbtable"));
 		} catch (ClassNotFoundException | IOException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

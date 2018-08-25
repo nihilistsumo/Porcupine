@@ -1,8 +1,11 @@
 package com.trema.pcpn.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -212,7 +215,19 @@ public class PorcupineRunner {
 				int retAspNo = Integer.parseInt(args[5]);
 				String outputDirPath = args[6];
 				ParasimAspectRunfileWriter rfWriter = new ParasimAspectRunfileWriter();
-				rfWriter.run(prop, artQrelsPath, isPath, isNoStopPath, aspIsPath, retAspNo, outputDirPath);
+				if(args[7]==null)
+					rfWriter.run(prop, artQrelsPath, isPath, isNoStopPath, aspIsPath, retAspNo, outputDirPath);
+				else {
+					BufferedReader br = new BufferedReader(new FileReader(new File(args[7])));
+					String page = br.readLine();
+					ArrayList<String> pageToInclude = new ArrayList<String>();
+					while(page!=null) {
+						pageToInclude.add("enwiki:"+page.replaceAll(" ", "%20"));
+						page = br.readLine();
+					}
+					br.close();
+					rfWriter.run(prop, artQrelsPath, isPath, isNoStopPath, aspIsPath, retAspNo, outputDirPath, pageToInclude);
+				}
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
