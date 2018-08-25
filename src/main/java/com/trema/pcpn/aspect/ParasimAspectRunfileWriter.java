@@ -64,17 +64,17 @@ public class ParasimAspectRunfileWriter {
 				});
 				System.out.println();
 				System.out.println("Calculating feature scores");
-				for(int i=0;i<retParaList.size()-1;i++) {
-					String keyPara = retParaList.get(i);
+				for(String keyPara:retParaList) {
 					ExecutorService exec = Executors.newFixedThreadPool(10);
-					for(int j=i+1; j<retParaList.size(); j++) {
-						String retPara = retParaList.get(j);
-						Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, aspectIs, is, isNoStops, retAspNo, page, scoresMap, table);
-						exec.execute(parasimThread);
+					for(String retPara:retParaList) {
+						if(!retPara.equalsIgnoreCase(keyPara)) {
+							Runnable parasimThread = new ParasimAspectSimJob(keyPara, retPara, paraAspectMap, con, aspectIs, is, isNoStops, retAspNo, page, scoresMap, table);
+							exec.execute(parasimThread);
+						}
 					}
 					exec.shutdown();
 					exec.awaitTermination(7, TimeUnit.DAYS);
-					System.out.println(".");
+					System.out.println("+");
 				}
 				p++;
 				System.out.println(page+" is complete. "+(truePagePara.keySet().size()-p)+" pages remaining...");
