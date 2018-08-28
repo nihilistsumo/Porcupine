@@ -139,6 +139,8 @@ public class AspectSimilarity {
 	public double[] aspectRelationScore(TopDocs keyAspects, TopDocs retAspects, IndexSearcher is, IndexSearcher aspIs, Connection con, String print, String table) throws IOException, ParseException, SQLException, InterruptedException {
 		double[] score = new double[3];
 		int count = keyAspects.scoreDocs.length*retAspects.scoreDocs.length;
+		if(count==0)
+			return score;
 		ExecutorService exec = Executors.newCachedThreadPool();
 		double[][] individualScores = new double[count][3];
 		int i = 0;
@@ -299,7 +301,10 @@ public class AspectSimilarity {
 					match++;
 			}
 		}
-		return (double)match/keyAspects.length;
+		if(keyAspects.length>0)
+			return (double)match/keyAspects.length;
+		else
+			return 0.0;
 	}
 	
 	public double entityMatchRatio(String paraID1, String paraID2, Connection con, String print, String table) {
@@ -335,7 +340,8 @@ public class AspectSimilarity {
 				if(entList2.contains(e))
 					commonEntities.add(e);
 			}
-			ratio = ((double)commonEntities.size())/entList1.size();
+			if(entList1.size()>0)
+				ratio = ((double)commonEntities.size())/entList1.size();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
