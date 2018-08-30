@@ -31,21 +31,34 @@ public class ParasimAspectSimJob implements Runnable {
 				System.out.print(".");
 			}
 			else {
+				/*
+				if(keyPara.equalsIgnoreCase("46fd59de2909ece56f52284188694c3a52dbcbe7") || retPara.equalsIgnoreCase("46fd59de2909ece56f52284188694c3a52dbcbe7"))
+					System.out.println("debug");
+				*/
 				TopDocs retAspectsKeyPara = paraAspects.get(keyPara);
 				TopDocs retAspectsRetPara = paraAspects.get(retPara);
 	
-				AspectSimilarity aspSim = new AspectSimilarity();
-				double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", table);
-				double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
-				double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", table);
-	
 				HashMap<String, Double> featureScores = new HashMap<String, Double>();
-				featureScores.put("asprel", aspScore[0]);
-				featureScores.put("asptext", aspScore[1]);
-				featureScores.put("asplead", aspScore[2]);
-				featureScores.put("aspmatch", aspectMatchRatio);
-				featureScores.put("entmatch", entMatchRatio);
-	
+				if(Float.isNaN(retAspectsKeyPara.getMaxScore()) || Float.isNaN(retAspectsRetPara.getMaxScore())) {
+					featureScores.put("asprel", 0.0);
+					featureScores.put("asptext", 0.0);
+					featureScores.put("asplead", 0.0);
+					featureScores.put("aspmatch", 0.0);
+					featureScores.put("entmatch", 0.0);
+				}
+				else {
+					AspectSimilarity aspSim = new AspectSimilarity();
+					double[] aspScore = aspSim.aspectRelationScore(retAspectsKeyPara, retAspectsRetPara, is, aspectIs, con, "na", table);
+					double aspectMatchRatio = aspSim.aspectMatchRatio(retAspectsKeyPara.scoreDocs, retAspectsRetPara.scoreDocs);
+					double entMatchRatio = aspSim.entityMatchRatio(keyPara, retPara, con, "na", table);
+		
+					featureScores.put("asprel", aspScore[0]);
+					featureScores.put("asptext", aspScore[1]);
+					featureScores.put("asplead", aspScore[2]);
+					featureScores.put("aspmatch", aspectMatchRatio);
+					featureScores.put("entmatch", entMatchRatio);
+				}
+				
 				if(!scoresMap.containsKey(pageID+"_"+keyPara)) {
 					HashMap<String, HashMap<String, Double>> retParaScores = new HashMap<String, HashMap<String, Double>>();
 					retParaScores.put(retPara, featureScores);
