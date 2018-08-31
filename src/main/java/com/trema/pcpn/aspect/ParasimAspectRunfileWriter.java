@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,7 @@ public class ParasimAspectRunfileWriter {
 				writers.put(fet, bw);
 			}
 			
-			HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
+			ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>> scoresMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>>();
 			int p = 0;
 			for(String page:truePagePara.keySet()) {
 				ArrayList<String> retParaList = truePagePara.get(page);
@@ -82,7 +83,7 @@ public class ParasimAspectRunfileWriter {
 			
 			System.out.println("Producing run files..");
 			for(String query:scoresMap.keySet()) {
-				HashMap<String, HashMap<String, Double>> retScores = scoresMap.get(query);
+				ConcurrentHashMap<String, ConcurrentHashMap<String, Double>> retScores = scoresMap.get(query);
 				for(String fet:aspectFeatures) {
 					Map<String, Double> unsortedScores = new HashMap<String, Double>();
 					for(String retPara: retScores.keySet())

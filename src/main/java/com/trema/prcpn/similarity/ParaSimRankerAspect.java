@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.StreamSupport;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -54,7 +55,7 @@ public class ParaSimRankerAspect {
 		if(method.equalsIgnoreCase("true"))
 			pageParaMap = truePageParaMap;
 		
-		HashMap<String, HashMap<String, HashMap<String, Double>>> scoresMap = new HashMap<String, HashMap<String, HashMap<String, Double>>>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>> scoresMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>>();
 		System.out.println("Calculating feature scores...");
 		int p=0;
 		for(String pageID:pageParaMap.keySet()) {
@@ -110,12 +111,12 @@ public class ParaSimRankerAspect {
 		
 		
 		for(String pageAndKey:scoresMap.keySet()) {
-			HashMap<String, HashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
-			HashMap<String, Double> maxScores = this.getMaxScores(scoreMap, features);
+			ConcurrentHashMap<String, ConcurrentHashMap<String, Double>> scoreMap = scoresMap.get(pageAndKey);
+			ConcurrentHashMap<String, Double> maxScores = this.getMaxScores(scoreMap, features);
 			String page = pageAndKey.split("_")[0];
 			String keyPara = pageAndKey.split("_")[1];
 			for(String retPara:scoreMap.keySet()) {
-				HashMap<String, Double> scores = scoreMap.get(retPara);
+				ConcurrentHashMap<String, Double> scores = scoreMap.get(retPara);
 				double score = 0;
 				String rfLine = "";
 				String[] featureArr = features.split(":");
@@ -134,8 +135,8 @@ public class ParaSimRankerAspect {
 		//System.out.println("Total no. of queries: "+allQueries.size());
 	}
 	
-	public HashMap<String, Double> getMaxScores(HashMap<String, HashMap<String, Double>> scoreMap, String features) {
-		HashMap<String, Double> maxScores = new HashMap<String, Double>();
+	public ConcurrentHashMap<String, Double> getMaxScores(ConcurrentHashMap<String, ConcurrentHashMap<String, Double>> scoreMap, String features) {
+		ConcurrentHashMap<String, Double> maxScores = new ConcurrentHashMap<String, Double>();
 		for(String feature:features.split(":")) {
 			double max = 0;
 			double currScore = 0;
