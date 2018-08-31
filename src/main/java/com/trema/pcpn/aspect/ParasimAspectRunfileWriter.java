@@ -91,7 +91,7 @@ public class ParasimAspectRunfileWriter {
 					Map<String, Double> sortedScores = MapUtil.sortByValue(unsortedScores);
 					int i=1;
 					for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
-						writers.get(fet).write(query+" Q0 "+entry.getKey()+" "+i+" "+entry.getValue()+" PARASIM-"+fet+"\n");
+						writers.get(fet).write(query.replace("_", ":")+" Q0 "+entry.getKey()+" "+i+" "+entry.getValue()+" PARASIM-"+fet+"\n");
 						i++;
 					}	
 				}

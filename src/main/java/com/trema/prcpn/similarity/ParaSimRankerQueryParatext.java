@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -28,15 +29,16 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 
 import com.trema.pcpn.util.DataUtilities;
+import com.trema.pcpn.util.MapUtil;
 
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class ParaSimRankerQueryParatext {
 	
-	public void rank(String indexDirPath, String indexDirNoStops, String candRunFilePath, String articleQrelsPath, String outRunPath, String method, String withTruePagePara) throws IOException {
+	public void rank(String indexDirPath, String candRunFilePath, String articleQrelsPath, String outRunPath, String method, String withTruePagePara) throws IOException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
-		IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
+		//IndexSearcher isNoStops = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirNoStops).toPath()))));
 		if(method.equalsIgnoreCase("bm25"))
 			is.setSimilarity(new BM25Similarity());
 		else if(method.equalsIgnoreCase("bool"))
@@ -57,38 +59,25 @@ public class ParaSimRankerQueryParatext {
 			StreamSupport.stream(retParaIDs.spliterator(), true).forEach(keyPara -> { 
 				if(truePageParaMap.get(pageID).contains(keyPara)) {
 					try {
-						QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
-						QueryParser qp = new QueryParser("parabody", new StandardAnalyzer());
-						HashMap<String, Double> retrievedResult = new HashMap<String, Double>();
-						String queryString = isNoStops.doc(isNoStops.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("parabody");
+						QueryParser qpID = new QueryParser("Id", new StandardAnalyzer());
+						QueryParser qp = new QueryParser("Text", new StandardAnalyzer());
+						Map<String, Double> retrievedResult = new HashMap<String, Double>();
+						String queryString = is.doc(is.search(qpID.parse(keyPara), 1).scoreDocs[0].doc).get("Text");
 						BooleanQuery.setMaxClauseCount(65536);
 						Query q = qp.parse(QueryParser.escape(queryString));
 						for(String retPara:retParaIDs) {
 							if(!retPara.equals(keyPara)) {
-								int retDocID = isNoStops.search(qpID.parse(retPara), 1).scoreDocs[0].doc;
+								int retDocID = is.search(qpID.parse(retPara), 1).scoreDocs[0].doc;
 								double currScore = is.explain(q, retDocID).getValue();
 								retrievedResult.put(retPara, currScore);
 							}
 						}
-						
-						/*
-						TopDocs tds = is.search(q, retNo*5);
-						ScoreDoc[] retDocs = tds.scoreDocs;
-						int count = 0;
-						for (int i = 0; i < retDocs.length; i++) {
-							Document d = is.doc(retDocs[i].doc);
-							String retParaID = d.getField("paraid").stringValue();
-							if(!retParaID.equals(keyPara) && retParaIDs.contains(retParaID)) {
-								retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
-								count++;
-							}
-							if(count>=retNo)
-								break;
-						}
-						*/
-						
-						for(String para:retrievedResult.keySet()) {
-							bw.write(pageID+":"+keyPara+" Q0 "+para+" 0 "+retrievedResult.get(para)+" "+method.toUpperCase()+"-MAP\n");
+
+						Map<String, Double> sortedResults = MapUtil.sortByValue(retrievedResult);
+						int rank = 1;
+						for(Map.Entry<String, Double> entry : sortedResults.entrySet()) {
+							bw.write(pageID+":"+keyPara+" Q0 "+entry.getKey()+" "+rank+" "+entry.getValue()+" "+method.toUpperCase()+"-MAP\n");
+							rank++;
 						}
 						System.out.print(".");
 					} catch (IOException | ParseException e) {
