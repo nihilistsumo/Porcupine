@@ -53,6 +53,8 @@ public class CompareBM25AspText {
 						System.out.println(paraText+"\n");
 					}
 				}
+				System.out.println("\n\n==============================================================");
+				System.out.println("==============================================================\n\n");
 			}
 			line = br.readLine();
 		}
