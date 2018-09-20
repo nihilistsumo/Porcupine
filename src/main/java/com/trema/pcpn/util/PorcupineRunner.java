@@ -12,6 +12,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.trema.pcpn.aspect.AspectSimilarity;
+import com.trema.pcpn.aspect.AspectVecGenerator;
 import com.trema.pcpn.aspect.ParasimAspectRlib;
 import com.trema.pcpn.aspect.ParasimAspectRunfileWriter;
 import com.trema.pcpn.aspect.ParasimAspectSimJob;
@@ -227,6 +228,14 @@ public class PorcupineRunner {
 					br.close();
 					rfWriter.run(prop, artQrelsPath, isPath, isNoStopPath, aspIsPath, retAspNo, outputDirPath, pageToInclude);
 				}
+			}
+			else if(args[0].equalsIgnoreCase("aspvec")) {
+				AspectVecGenerator aspVecGen = new AspectVecGenerator();
+				String artQrels = args[1];
+				String indexDirPath = args[2];
+				String aspIndexDirPath = args[3];
+				String outputFile = args[4];
+				aspVecGen.processParagraphs(artQrels, indexDirPath, aspIndexDirPath, outputFile);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

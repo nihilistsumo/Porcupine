@@ -31,12 +31,18 @@ public class AspectVecGenerator {
 		BufferedReader br = new BufferedReader(new FileReader(new File(artQrels)));
 		String line = br.readLine();
 		HashMap<String, SparseAspectVector> paraAspVecMap = new HashMap<String, SparseAspectVector>();
+		int count = 0;
 		while(line!=null) {
 			String paraID = line.split(" ")[2];
 			String paraText = is.doc(is.search(qpID.parse(paraID), 1).scoreDocs[0].doc).get("Text");
 			SparseAspectVector aspVec = p2av.getAspectVec(paraText, aspIs, (int)aspIs.collectionStatistics("Id").docCount());
 			paraAspVecMap.put(paraID, aspVec);
+			
 			System.out.print(".");
+			count++;
+			if(count>=25)
+				System.out.print("+\n");
+			
 			line = br.readLine();
 		}
 		gson.toJson(paraAspVecMap, new FileWriter(new File(outputFile)));
