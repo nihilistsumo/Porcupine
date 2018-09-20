@@ -40,8 +40,10 @@ public class AspectVecGenerator {
 			
 			System.out.print(".");
 			count++;
-			if(count>=25)
+			if(count>=25) {
 				System.out.print("+\n");
+				count = 0;
+			}
 			
 			line = br.readLine();
 		}
