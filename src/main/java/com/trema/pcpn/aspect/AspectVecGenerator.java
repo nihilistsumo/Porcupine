@@ -3,7 +3,6 @@ package com.trema.pcpn.aspect;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,7 +15,6 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
 
-import com.google.gson.Gson;
 import com.trema.pcpn.aspect.ParagraphToAspectVec.SparseAspectVector;
 
 public class AspectVecGenerator {
@@ -24,7 +22,7 @@ public class AspectVecGenerator {
 	public void processParagraphs(String artQrels, String indexDirPath, String aspIndexDirPath, String outputFile) throws IOException, ParseException {
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(indexDirPath).toPath()))));
 		IndexSearcher aspIs = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(aspIndexDirPath).toPath()))));
-		Gson gson = new Gson();
+		//Gson gson = new Gson();
 		QueryParser qpID = new QueryParser("Id", new StandardAnalyzer());
 		
 		ParagraphToAspectVec p2av = new ParagraphToAspectVec();
@@ -47,7 +45,27 @@ public class AspectVecGenerator {
 			
 			line = br.readLine();
 		}
-		gson.toJson(paraAspVecMap, new FileWriter(new File(outputFile)));
+		String jsonString = "";
+		for(String paraID:paraAspVecMap.keySet()) {
+			SparseAspectVector vec = paraAspVecMap.get(paraID);
+			if(jsonString.length()>0)
+				jsonString+=",";
+			jsonString+="\""+paraID+"\":[";
+			String vecData = "";
+			for(int i=0; i<ParagraphToAspectVec.REAL_ASPVEC_SIZE; i++) {
+				if(vecData.length()>0)
+					vecData+=",";
+				vecData+="{\""+vec.getAspDocID(i)+"\":\""+vec.get(i)+"\"}";
+			}
+			jsonString+=vecData+"]";
+		}
+		String partName = outputFile.split("/")[outputFile.split("/").length-1];
+		jsonString = "{\""+partName+"\":{"+jsonString+"}}";
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFile)));
+		bw.write(jsonString);
+		bw.close();
+		br.close();
+		//gson.toJson(paraAspVecMap, new FileWriter(new File(outputFile)));
 	}
 
 	public static void main(String[] args) {
