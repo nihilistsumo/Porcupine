@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -21,6 +22,7 @@ import com.trema.pcpn.parasimutil.CombineRunFilesUsingRlibModel;
 import com.trema.pcpn.parasimutil.ParasimFetFileWriter;
 import com.trema.pcpn.parasimutil.ParasimFetFileWriterShort;
 import com.trema.prcpn.similarity.ParaSimRanker;
+import com.trema.prcpn.similarity.ParaSimRankerAspvec;
 import com.trema.prcpn.similarity.ParaSimRankerQueryParatext;
 import com.trema.prcpn.similarity.ParaSimRankerRand;
 import com.trema.prcpn.similarity.ParaSimSanityCheck;
@@ -236,6 +238,14 @@ public class PorcupineRunner {
 				String aspIndexDirPath = args[3];
 				String outputFile = args[4];
 				aspVecGen.processParagraphs(artQrels, indexDirPath, aspIndexDirPath, outputFile);
+			}
+			else if(args[0].equalsIgnoreCase("aspvecrun")) {
+				ParaSimRankerAspvec simAspVec = new ParaSimRankerAspvec();
+				String aspVecJSONdirPath = args[1];
+				String titles = args[2];
+				String articleQrelsPath = args[3];
+				String outRunPath = args[4];
+				simAspVec.rank(prop, aspVecJSONdirPath, titles, articleQrelsPath, outRunPath);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

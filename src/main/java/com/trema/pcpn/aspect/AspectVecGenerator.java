@@ -14,6 +14,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONObject;
 
 import com.trema.pcpn.aspect.ParagraphToAspectVec.SparseAspectVector;
 
@@ -45,6 +46,21 @@ public class AspectVecGenerator {
 			
 			line = br.readLine();
 		}
+		
+		JSONObject paraVecMap = new JSONObject();
+		for(String paraID:paraAspVecMap.keySet()) {
+			SparseAspectVector aspVec = paraAspVecMap.get(paraID);
+			JSONObject vec = new JSONObject();
+			for(int i=0; i<ParagraphToAspectVec.REAL_ASPVEC_SIZE; i++)
+				vec.put(aspVec.getAspDocID(i), aspVec.get(i));
+			paraVecMap.put(paraID, vec);
+		}
+		FileWriter fw = new FileWriter(outputFile);
+		fw.write(paraVecMap.toJSONString());
+		fw.flush();
+		fw.close();
+		
+		/*
 		String jsonString = "";
 		for(String paraID:paraAspVecMap.keySet()) {
 			SparseAspectVector vec = paraAspVecMap.get(paraID);
@@ -64,6 +80,8 @@ public class AspectVecGenerator {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFile)));
 		bw.write(jsonString);
 		bw.close();
+		*/
+		
 		br.close();
 		//gson.toJson(paraAspVecMap, new FileWriter(new File(outputFile)));
 	}
