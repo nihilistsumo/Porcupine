@@ -35,7 +35,7 @@ public class AspectVecGenerator {
 			String paraID = line.split(" ")[2];
 			String paraText = is.doc(is.search(qpID.parse(paraID), 1).scoreDocs[0].doc).get("Text");
 			SparseAspectVector aspVec = p2av.getAspectVec(paraText, aspIs, (int)aspIs.collectionStatistics("Id").docCount());
-			paraAspVecMap.put(paraID, aspVec);
+			paraAspVecMap.put("para:"+paraID, aspVec);
 			
 			System.out.print(".");
 			count++;
@@ -52,38 +52,14 @@ public class AspectVecGenerator {
 			SparseAspectVector aspVec = paraAspVecMap.get(paraID);
 			JSONObject vec = new JSONObject();
 			for(int i=0; i<ParagraphToAspectVec.REAL_ASPVEC_SIZE; i++)
-				vec.put(aspVec.getAspDocID(i), aspVec.get(i));
+				vec.put("asp:"+aspVec.getAspDocID(i), aspVec.get(i));
 			paraVecMap.put(paraID, vec);
 		}
 		FileWriter fw = new FileWriter(outputFile);
 		fw.write(paraVecMap.toJSONString());
 		fw.flush();
 		fw.close();
-		
-		/*
-		String jsonString = "";
-		for(String paraID:paraAspVecMap.keySet()) {
-			SparseAspectVector vec = paraAspVecMap.get(paraID);
-			if(jsonString.length()>0)
-				jsonString+=",";
-			jsonString+="\""+paraID+"\":[";
-			String vecData = "";
-			for(int i=0; i<ParagraphToAspectVec.REAL_ASPVEC_SIZE; i++) {
-				if(vecData.length()>0)
-					vecData+=",";
-				vecData+="{\""+vec.getAspDocID(i)+"\":\""+vec.get(i)+"\"}";
-			}
-			jsonString+=vecData+"]";
-		}
-		String partName = outputFile.split("/")[outputFile.split("/").length-1];
-		jsonString = "{\""+partName+"\":{"+jsonString+"}}";
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFile)));
-		bw.write(jsonString);
-		bw.close();
-		*/
-		
 		br.close();
-		//gson.toJson(paraAspVecMap, new FileWriter(new File(outputFile)));
 	}
 
 	public static void main(String[] args) {

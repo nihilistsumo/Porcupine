@@ -33,7 +33,7 @@ public class ParaSimRankerAspvec {
 		String page = br.readLine();
 		ArrayList<String> titlesSet = new ArrayList<String>();
 		while(page!=null) {
-			titlesSet.add("enwiki:"+page.replaceAll(" ", "%20"));
+			titlesSet.add(page);
 			page = br.readLine();
 		}
 		br.close();
@@ -42,18 +42,25 @@ public class ParaSimRankerAspvec {
 		System.out.println("Calculating feature scores...");
 		int p=0;
 		for(String pageID:pageParaMap.keySet()) {
-			if(titlesSet.contains(pageID.split(":")[1])) {
+			String title = pageID.split(":")[1].replaceAll("%20", " ");
+			if(titlesSet.contains(title)) {
 				ArrayList<String> retParaIDs = pageParaMap.get(pageID);
-				System.out.println();
-				System.out.println("Calculating feature scores");
+				int count = 0;
 				for(String keyPara:retParaIDs) {
+					String runKey = pageID+":"+keyPara;
 					if(pageParaMap.get(pageID).contains(keyPara)) {
+						scoresMap.put(runKey, new ConcurrentHashMap<String, Double>());
 						for(String retPara:retParaIDs) {
 							if(!keyPara.equals(retPara)) {
 								// calculate similarity score from vector pairs of para IDs
+								scoresMap.get(runKey).put(retPara, aspVecSim.getCosineSimilarity((String)keyPara, (String)retPara));
 							}
 						}
-						System.out.println(".");
+						
+						System.out.print(".");
+						count++;
+						if(count%10 == 0)
+							System.out.print("+\n");
 					}
 				}
 				p++;
