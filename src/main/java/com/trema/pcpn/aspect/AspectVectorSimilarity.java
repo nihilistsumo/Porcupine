@@ -41,8 +41,10 @@ public class AspectVectorSimilarity {
 		}
 	}
 	
-	public double getCosineSimilarity(String para1, String para2) {
+	public double getCosineSimilarity(String p1, String p2) {
 		double score = 0;
+		String para1 = "para:"+p1;
+		String para2 = "para:"+p2;
 		if(!jsonCache.containsKey(para1))
 			this.searchKey(para1);
 		JSONObject para1VecObj = (JSONObject) jsonCache.get(para1);
@@ -51,8 +53,8 @@ public class AspectVectorSimilarity {
 		JSONObject para2VecObj = (JSONObject) jsonCache.get(para2);
 		double aDotB = 0; // a.b
 		for(Object k1:para1VecObj.keySet()) {
-			if(para2VecObj.containsKey(k1.toString()))
-				aDotB+=(double)para1VecObj.get(k1.toString())*(double)para2VecObj.get(k1.toString());
+			if(para2VecObj.containsKey("asp:"+k1.toString()))
+				aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
 		}
 		double modA = this.lengthVec(para1VecObj);
 		double modB = this.lengthVec(para2VecObj);
