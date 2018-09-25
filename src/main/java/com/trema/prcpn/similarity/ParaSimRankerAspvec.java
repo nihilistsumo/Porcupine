@@ -64,7 +64,7 @@ public class ParaSimRankerAspvec {
 					}
 				}
 				p++;
-				System.out.println(pageID+" is complete. "+(titlesSet.size()-p)+" pages remaining...");
+				System.out.println("\n"+pageID+" is complete. "+(titlesSet.size()-p)+" pages remaining...");
 			}
 		}
 		System.out.println("Feature scores calculated.\nWriting run file...");
