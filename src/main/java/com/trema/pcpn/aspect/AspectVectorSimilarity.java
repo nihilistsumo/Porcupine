@@ -72,12 +72,14 @@ public class AspectVectorSimilarity {
 	
 	private void searchKey(String key) {
 		JSONParser parser = new JSONParser();
+		boolean foundKey = false;
 		for(int i=0; i<aspVecJSONfiles.length; i++) {
 			if(i!=jsonCacheIndex) {
 				try {
 					jsonCache = (JSONObject) parser.parse(new FileReader(aspVecJSONdir+"/"+aspVecJSONfiles[i]));
 					if(jsonCache.containsKey(key)) {
 						jsonCacheIndex = i;
+						foundKey = true;
 						break;
 					}
 				} catch (IOException | ParseException e) {
@@ -86,7 +88,8 @@ public class AspectVectorSimilarity {
 				}
 			}
 		}
-		throw (new NullPointerException("Key: "+key+" not found in any of the json objects in "+aspVecJSONdir));
+		if(!foundKey)
+			throw (new NullPointerException("Key: "+key+" not found in any of the json objects in "+aspVecJSONdir));
 	}
 
 	public String[] getAspVecJSONfiles() {
