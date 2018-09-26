@@ -48,16 +48,16 @@ public class AspectVectorSimilarity {
 		if(!jsonCache.containsKey(para1))
 			this.searchKey(para1);
 		JSONObject para1VecObj = (JSONObject) jsonCache.get(para1);
+		double modA = this.lengthVec(para1VecObj);
 		if(!jsonCache.containsKey(para2))
 			this.searchKey(para2);
 		JSONObject para2VecObj = (JSONObject) jsonCache.get(para2);
+		double modB = this.lengthVec(para2VecObj);
 		double aDotB = 0; // a.b
 		for(Object k1:para1VecObj.keySet()) {
 			if(para2VecObj.containsKey("asp:"+k1.toString()))
 				aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
 		}
-		double modA = this.lengthVec(para1VecObj);
-		double modB = this.lengthVec(para2VecObj);
 		score = aDotB/(modA*modB);
 		return score;
 	}

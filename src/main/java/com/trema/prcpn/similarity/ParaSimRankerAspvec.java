@@ -39,9 +39,9 @@ public class ParaSimRankerAspvec {
 		br.close();
 		
 		ConcurrentHashMap<String, ConcurrentHashMap<String, Double>> scoresMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>();
-		System.out.println("Calculating feature scores...");
 		int p=0;
 		for(String pageID:pageParaMap.keySet()) {
+			System.out.println("\nPageID: "+pageID);
 			String title = pageID.split(":")[1].replaceAll("%20", " ");
 			if(titlesSet.contains(title)) {
 				ArrayList<String> retParaIDs = pageParaMap.get(pageID);
@@ -64,7 +64,7 @@ public class ParaSimRankerAspvec {
 					}
 				}
 				p++;
-				System.out.println("\n"+pageID+" is complete. "+(titlesSet.size()-p)+" pages remaining...");
+				System.out.println("\nCompleted. "+(titlesSet.size()-p)+" pages remaining...");
 			}
 		}
 		System.out.println("Feature scores calculated.\nWriting run file...");
