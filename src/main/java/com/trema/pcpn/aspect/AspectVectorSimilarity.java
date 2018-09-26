@@ -12,7 +12,7 @@ public class AspectVectorSimilarity {
 	
 	private String aspVecJSONdir;
 	private String[] aspVecJSONfiles;
-	private JSONObject jsonCache;
+	private JSONObject[] jsonCache;
 	private int jsonCacheIndex = 0;
 	
 	public AspectVectorSimilarity(String aspVecJSONdirPath) {
@@ -23,18 +23,15 @@ public class AspectVectorSimilarity {
 			aspVecJSONfiles = new String[jsonFiles.length];
 			for(int i=0; i<aspVecJSONfiles.length; i++)
 				aspVecJSONfiles[i] = jsonFiles[i].getName();
+			jsonCache = new JSONObject[aspVecJSONfiles.length];
 			JSONParser parser = new JSONParser();
-			jsonCache = (JSONObject) parser.parse(new FileReader(aspVecJSONdirPath+"/"+aspVecJSONfiles[jsonCacheIndex]));
-			/*
-			temp = (JSONObject) jsonCache.get("7c27f1f104669e97b25328d7f180d824bcb9d692");
-			int count = 0;
-			for(Object k:temp.keySet()) {
-				System.out.println("Key: "+Integer.parseInt(k.toString())+", Value: "+(double)temp.get(k));
-				count++;
-				if(count>9)
-					break;
+			System.out.println("Reading json para-aspect vectors");
+			for(int i=0; i<aspVecJSONfiles.length; i++) {
+				jsonCache[i] = (JSONObject) parser.parse(new FileReader(aspVecJSONdirPath+"/"+aspVecJSONfiles[i]));
+				System.out.print(".");
 			}
-			*/
+			System.out.println("\npara-aspect vectors are read to memory\n");
+			//jsonCache = (JSONObject) parser.parse(new FileReader(aspVecJSONdirPath+"/"+aspVecJSONfiles[jsonCacheIndex]));
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -45,13 +42,13 @@ public class AspectVectorSimilarity {
 		double score = 0;
 		String para1 = "para:"+p1;
 		String para2 = "para:"+p2;
-		if(!jsonCache.containsKey(para1))
+		if(!jsonCache[jsonCacheIndex].containsKey(para1))
 			this.searchKey(para1);
-		JSONObject para1VecObj = (JSONObject) jsonCache.get(para1);
+		JSONObject para1VecObj = (JSONObject) jsonCache[jsonCacheIndex].get(para1);
 		double modA = this.lengthVec(para1VecObj);
-		if(!jsonCache.containsKey(para2))
+		if(!jsonCache[jsonCacheIndex].containsKey(para2))
 			this.searchKey(para2);
-		JSONObject para2VecObj = (JSONObject) jsonCache.get(para2);
+		JSONObject para2VecObj = (JSONObject) jsonCache[jsonCacheIndex].get(para2);
 		double modB = this.lengthVec(para2VecObj);
 		double aDotB = 0; // a.b
 		for(Object k1:para1VecObj.keySet()) {
@@ -75,20 +72,14 @@ public class AspectVectorSimilarity {
 	}
 	
 	private void searchKey(String key) {
-		JSONParser parser = new JSONParser();
 		boolean foundKey = false;
 		for(int i=0; i<aspVecJSONfiles.length; i++) {
 			if(i!=jsonCacheIndex) {
-				try {
-					jsonCache = (JSONObject) parser.parse(new FileReader(aspVecJSONdir+"/"+aspVecJSONfiles[i]));
-					if(jsonCache.containsKey(key)) {
-						jsonCacheIndex = i;
-						foundKey = true;
-						break;
-					}
-				} catch (IOException | ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				//jsonCache = (JSONObject) parser.parse(new FileReader(aspVecJSONdir+"/"+aspVecJSONfiles[i]));
+				if(jsonCache[i].containsKey(key)) {
+					jsonCacheIndex = i;
+					foundKey = true;
+					break;
 				}
 			}
 		}
@@ -100,7 +91,7 @@ public class AspectVectorSimilarity {
 		return aspVecJSONfiles;
 	}
 
-	public JSONObject getJsonCache() {
+	public JSONObject[] getJsonCache() {
 		return jsonCache;
 	}
 
