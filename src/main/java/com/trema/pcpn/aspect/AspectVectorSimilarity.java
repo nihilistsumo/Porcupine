@@ -58,6 +58,8 @@ public class AspectVectorSimilarity {
 			if(para2VecObj.containsKey("asp:"+k1.toString()))
 				aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
 		}
+		if(modA<Double.MIN_VALUE || modB<Double.MIN_VALUE)
+			return score;
 		score = aDotB/(modA*modB);
 		return score;
 	}
@@ -65,6 +67,8 @@ public class AspectVectorSimilarity {
 	private double lengthVec(JSONObject vecObj) {
 		double sumOfSquares = 0;
 		for(Object key:vecObj.keySet()) {
+			if(key.toString().equalsIgnoreCase("asp:-1"))
+				continue;
 			sumOfSquares+=Math.pow((double)vecObj.get(key.toString()), 2);
 		}
 		return Math.sqrt(sumOfSquares);

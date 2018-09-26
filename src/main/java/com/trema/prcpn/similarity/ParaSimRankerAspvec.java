@@ -74,10 +74,10 @@ public class ParaSimRankerAspvec {
 			Map<String, Double> scoreMap = MapUtil.sortByValue(scoresMap.get(pageAndKey));
 			double score = 0;
 			double maxScore = this.getMaxScore(scoreMap);
-			String pageID = pageAndKey.split("_")[0];
-			String keyPara = pageAndKey.split("_")[1];
+			String pageID = pageAndKey.split(":")[0]+":"+pageAndKey.split(":")[1];
+			String keyPara = pageAndKey.split(":")[2];
 			for(String retPara:scoreMap.keySet()) {
-				if(maxScore>0.00000001)
+				if(maxScore>Double.MIN_VALUE)
 					score = scoreMap.get(retPara)/maxScore;
 				else
 					score = scoreMap.get(retPara);
