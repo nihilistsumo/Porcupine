@@ -51,13 +51,19 @@ public class AspectVectorSimilarity {
 		JSONObject para2VecObj = (JSONObject) jsonCache[jsonCacheIndex].get(para2);
 		double modB = this.lengthVec(para2VecObj);
 		double aDotB = 0; // a.b
+		
+		System.out.println("Going to calculate cosine similarity between "+p1+" and "+p2);
+		System.out.println("|A| = "+modA+", |B| = "+modB);
 		for(Object k1:para1VecObj.keySet()) {
 			if(para2VecObj.containsKey("asp:"+k1.toString()))
 				aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
 		}
+		System.out.println("A.B = "+aDotB);
 		if(modA<Double.MIN_VALUE || modB<Double.MIN_VALUE)
 			return score;
 		score = aDotB/(modA*modB);
+		System.out.println("|A|*|B| = "+modA*modB);
+		System.out.println("Cosine similarity score = A.B/(|A|*|B|) = "+score);
 		return score;
 	}
 	
