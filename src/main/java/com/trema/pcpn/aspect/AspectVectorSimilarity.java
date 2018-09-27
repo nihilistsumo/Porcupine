@@ -55,8 +55,12 @@ public class AspectVectorSimilarity {
 		System.out.println("Going to calculate cosine similarity between "+p1+" and "+p2);
 		System.out.println("|A| = "+modA+", |B| = "+modB);
 		for(Object k1:para1VecObj.keySet()) {
-			if(para2VecObj.containsKey("asp:"+k1.toString()))
-				aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
+			if(para2VecObj.containsKey("asp:"+k1.toString())) {
+				double a = (double)para1VecObj.get("asp:"+k1.toString());
+				double b = (double)para2VecObj.get("asp:"+k1.toString());
+				aDotB+=Math.exp(Math.log(a)+Math.log(b));
+				//aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
+			}
 		}
 		System.out.println("A.B = "+aDotB);
 		if(modA<Double.MIN_VALUE || modB<Double.MIN_VALUE)
