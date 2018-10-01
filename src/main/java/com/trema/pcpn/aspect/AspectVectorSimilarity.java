@@ -52,23 +52,23 @@ public class AspectVectorSimilarity {
 		double modB = this.lengthVec(para2VecObj);
 		double aDotB = 0; // a.b
 		
-		System.out.println("Going to calculate cosine similarity between "+p1+" and "+p2);
-		System.out.println("|A| = "+modA+", |B| = "+modB+"\n");
+		//System.out.println("Going to calculate cosine similarity between "+p1+" and "+p2);
+		//System.out.println("|A| = "+modA+", |B| = "+modB+"\n");
 		for(Object k1:para1VecObj.keySet()) {
 			if(para2VecObj.containsKey(k1.toString())) {
 				double a = (double)para1VecObj.get(k1.toString());
 				double b = (double)para2VecObj.get(k1.toString());
 				aDotB+=Math.exp(Math.log(a)+Math.log(b));
-				System.out.print("#");
+				//System.out.print("#");
 				//aDotB+=(double)para1VecObj.get("asp:"+k1.toString())*(double)para2VecObj.get("asp:"+k1.toString());
 			}
 		}
-		System.out.println("\nA.B = "+aDotB);
+		//System.out.println("\nA.B = "+aDotB);
 		if(modA<Double.MIN_VALUE || modB<Double.MIN_VALUE)
 			return score;
 		score = aDotB/(modA*modB);
-		System.out.println("|A|*|B| = "+modA*modB);
-		System.out.println("Cosine similarity score = A.B/(|A|*|B|) = "+score);
+		//System.out.println("|A|*|B| = "+modA*modB);
+		//System.out.println("Cosine similarity score = A.B/(|A|*|B|) = "+score);
 		return score;
 	}
 	
