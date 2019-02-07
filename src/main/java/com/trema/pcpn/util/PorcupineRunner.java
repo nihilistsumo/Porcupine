@@ -217,7 +217,7 @@ public class PorcupineRunner {
 				int retAspNo = Integer.parseInt(args[5]);
 				String outputDirPath = args[6];
 				ParasimAspectRunfileWriter rfWriter = new ParasimAspectRunfileWriter();
-				if(args[7]==null)
+				if(args.length<8)
 					rfWriter.run(prop, artQrelsPath, isPath, isNoStopPath, aspIsPath, retAspNo, outputDirPath);
 				else {
 					BufferedReader br = new BufferedReader(new FileReader(new File(args[7])));
