@@ -49,10 +49,10 @@ public class ParasimAspectRunfileWriter {
 				System.out.print("Retrieving aspects for "+retParaList.size()+" paras in "+page);
 				StreamSupport.stream(retParaList.spliterator(), true).forEach(para -> {
 					try {
-						QueryParser qpID = new QueryParser("paraid", new StandardAnalyzer());
+						QueryParser qpID = new QueryParser("Id", new StandardAnalyzer());
 						QueryParser qpAspText = new QueryParser("Text", new StandardAnalyzer());
 						AspectSimilarity aspSim = new AspectSimilarity();
-						String queryString = isNoStops.doc(isNoStops.search(qpID.parse(para), 1).scoreDocs[0].doc).get("parabody");
+						String queryString = isNoStops.doc(isNoStops.search(qpID.parse(para), 1).scoreDocs[0].doc).get("Text");
 						BooleanQuery.setMaxClauseCount(65536);
 						Query q = qpAspText.parse(QueryParser.escape(queryString));
 						TopDocs retAspectsPara = aspectIs.search(q, retAspNo);
