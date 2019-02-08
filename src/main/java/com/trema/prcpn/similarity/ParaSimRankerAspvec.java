@@ -69,6 +69,9 @@ public class ParaSimRankerAspvec {
 		}
 		System.out.println("Feature scores calculated.\nWriting run file...");
 		
+		for(String k:scoresMap.keySet())
+			System.out.println(k);
+		
 		
 		for(String pageAndKey:scoresMap.keySet()) {
 			Map<String, Double> scoreMap = MapUtil.sortByValue(scoresMap.get(pageAndKey));
