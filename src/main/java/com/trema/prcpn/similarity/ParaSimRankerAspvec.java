@@ -69,6 +69,7 @@ public class ParaSimRankerAspvec {
 		}
 		System.out.println("Feature scores calculated.\nWriting run file...");
 		
+		System.out.println("Debug info: scoresMap");
 		for(String k:scoresMap.keySet())
 			System.out.println(k);
 		
